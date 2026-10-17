@@ -1,620 +1,3444 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shri Shyam Cafe | Fresh • Tasty • Delicious</title>
-  
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Google Fonts & Lucide Icons -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/lucide@latest"></script>
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  Coffee,
+  ShoppingBag,
+  Phone,
+  MessageCircle,
+  MapPin,
+  Calendar,
+  Clock,
+  Users,
+  ChevronRight,
+  Plus,
+  Minus,
+  Trash2,
+  X,
+  CheckCircle,
+  AlertCircle,
+  Menu as MenuIcon,
+  Search,
+  Lock,
+  Unlock,
+  CreditCard,
+  QrCode,
+  DollarSign,
+  Truck,
+  Store,
+  ArrowRight,
+  Sparkles,
+  ExternalLink,
+  ChevronDown,
+  Edit2,
+  Save,
+  KeyRound,
+  Settings,
+  Image as ImageIcon,
+  Check,
+  Eye,
+  EyeOff
+} from 'lucide-react';
 
-  <style>
-    body {
-      font-family: 'Outfit', sans-serif;
-      background-color: #0c0a09;
-      color: #f5f5f4;
+// --- INITIAL MENU DATA (Exact items and prices from specifications) ---
+const INITIAL_MENU_ITEMS = [
+  // TEA & COFFEE
+  {
+    id: 'tc-1',
+    name: 'Cold Coffee (100ml)',
+    category: 'Tea & Coffee',
+    price: 20,
+    description: 'Chilled, creamy, hand-beaten cold coffee in convenient 100ml size.',
+    image: 'https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: false
+  },
+  {
+    id: 'tc-2',
+    name: 'Cold Coffee (250ml)',
+    category: 'Tea & Coffee',
+    price: 40,
+    description: 'Refreshing thick cafe-style cold coffee served chilled in 250ml glass.',
+    image: 'https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: false
+  },
+  {
+    id: 'tc-3',
+    name: 'Black Coffee',
+    category: 'Tea & Coffee',
+    price: 15,
+    description: 'Rich, bold, freshly brewed hot aromatic black coffee.',
+    image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: false
+  },
+  {
+    id: 'tc-4',
+    name: 'Hot Coffee',
+    category: 'Tea & Coffee',
+    price: 20,
+    description: 'Creamy frothy hot coffee prepared with fresh milk.',
+    image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: false
+  },
+  {
+    id: 'tc-5',
+    name: 'Special Tea',
+    category: 'Tea & Coffee',
+    price: 10,
+    description: 'Desi Kadak Chai brewed with ginger and fragrant cardamom.',
+    image: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: false
+  },
+  {
+    id: 'tc-6',
+    name: 'Black Tea',
+    category: 'Tea & Coffee',
+    price: 8,
+    description: 'Light, herbal-infused refreshing black tea.',
+    image: 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: false
+  },
+  {
+    id: 'tc-7',
+    name: 'Oreo Shake',
+    category: 'Tea & Coffee',
+    price: 50,
+    description: 'Rich thick vanilla milk blended with crunchy Oreo cookies.',
+    image: 'https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: false
+  },
+  {
+    id: 'tc-8',
+    name: 'KitKat Shake',
+    category: 'Tea & Coffee',
+    price: 50,
+    description: 'Crunchy KitKat wafer chocolate blended thick shake.',
+    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: false
+  },
+  {
+    id: 'tc-9',
+    name: 'Chocolate Shake',
+    category: 'Tea & Coffee',
+    price: 50,
+    description: 'Velvety dark chocolate shake topped with chocolate drizzle.',
+    image: 'https://images.unsplash.com/photo-1541658016709-82535e94bc69?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: false
+  },
+  {
+    id: 'tc-10',
+    name: 'Sweet Lassi',
+    category: 'Tea & Coffee',
+    price: 20,
+    description: 'Traditional sweet churned curd lassi served cool.',
+    image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: false
+  },
+
+  // SNACKS
+  {
+    id: 'sn-1',
+    name: 'Bread Pakoda',
+    category: 'Snacks',
+    price: 12,
+    description: 'Golden spiced potato stuffed crispy deep fried bread fritter.',
+    image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: false
+  },
+  {
+    id: 'sn-2',
+    name: 'Paneer Bread Pakoda',
+    category: 'Snacks',
+    price: 25,
+    description: 'Bread pakoda stuffed with generous slice of fresh cottage paneer.',
+    image: 'https://images.unsplash.com/photo-1606491956689-2ea866880c84?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: false
+  },
+  {
+    id: 'sn-3',
+    name: 'Steam Momo',
+    category: 'Momos',
+    price: 10,
+    description: 'Hot steamed vegetable dumplings served with spicy garlic red chutney.',
+    image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: false
+  },
+  {
+    id: 'sn-4',
+    name: 'Fry Momo',
+    category: 'Momos',
+    price: 20,
+    description: 'Golden crispy fried vegetable momos with fiery red dip.',
+    image: 'https://images.unsplash.com/photo-1541696432-82c6da8ce7bf?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: false
+  },
+  {
+    id: 'sn-5',
+    name: 'Veg Roll',
+    category: 'Snacks',
+    price: 12,
+    description: 'Crispy flatbread wrap loaded with sauteed spiced veggies & sauces.',
+    image: 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: false
+  },
+  {
+    id: 'sn-6',
+    name: 'Aalu Fries',
+    category: 'Snacks',
+    price: 15,
+    description: 'Crunchy potato French fries seasoned with cafe special peri-peri masala.',
+    image: 'https://images.unsplash.com/photo-1576107232684-1279f3908594?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: false
+  },
+  {
+    id: 'sn-7',
+    name: 'Pani Puri',
+    category: 'Snacks',
+    price: 10,
+    description: 'Crispy hollow puris served with tangy mint water and spicy potato filling.',
+    image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: false
+  },
+
+  // BURGERS
+  {
+    id: 'bg-1',
+    name: 'Aalu Tikki Burger',
+    category: 'Burgers',
+    price: 30,
+    description: 'Crispy seasoned spiced potato patty, sliced tomato, onion & creamy mayo.',
+    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: false
+  },
+  {
+    id: 'bg-2',
+    name: 'Paneer Tikki Burger',
+    category: 'Burgers',
+    price: 45,
+    description: 'Tender spiced paneer patty grilled with fresh herbs, crisp veggies & sauce.',
+    image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: false
+  },
+
+  // SANDWICHES
+  {
+    id: 'sw-1',
+    name: 'Grilled Sandwich',
+    category: 'Sandwiches',
+    price: 40,
+    description: 'Golden grilled sandwich toasted to perfection with spiced veggie filling.',
+    image: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: false
+  },
+
+  // CHINESE FOOD
+  {
+    id: 'cf-1',
+    name: 'Veg Hakka Noodles',
+    category: 'Chinese Food',
+    price: 30,
+    description: 'Wok tossed noodles with crunchy cabbage, capsicum, carrots, and dark soy.',
+    image: 'https://images.unsplash.com/photo-1612927601601-6638404737ce?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: false
+  },
+  {
+    id: 'cf-2',
+    name: 'Paneer Hakka Noodles',
+    category: 'Chinese Food',
+    price: 50,
+    description: 'Wok fried noodles loaded with golden paneer cubes and Asian spices.',
+    image: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: false
+  },
+
+  // PIZZA MENU (With Reactive Size Selector)
+  {
+    id: 'pz-1',
+    name: 'Cheese Pizza',
+    category: 'Pizza',
+    description: 'Classic rich melted mozzarella cheese on handcrafted herbed crust.',
+    image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: true,
+    sizes: {
+      Small: 65,
+      Medium: 120,
+      Large: 180
     }
-    .font-serif-title {
-      font-family: 'Playfair Display', serif;
+  },
+  {
+    id: 'pz-2',
+    name: 'Double Cheese Pizza',
+    category: 'Pizza',
+    description: 'Extra loaded double layer of liquid and stretch mozzarella cheese.',
+    image: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: true,
+    sizes: {
+      Small: 75,
+      Medium: 140,
+      Large: 210
     }
-    /* Custom scrollbar */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+  },
+  {
+    id: 'pz-3',
+    name: 'Paneer Pizza',
+    category: 'Pizza',
+    description: 'Diced marinated tandoori paneer, sweet corn, onions & mozzarella.',
+    image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: true,
+    sizes: {
+      Small: 85,
+      Medium: 160,
+      Large: 240
     }
-    ::-webkit-scrollbar-track {
-      background: #1c1917;
+  },
+  {
+    id: 'pz-4',
+    name: 'Veggies Pizza',
+    category: 'Pizza',
+    description: 'Crisp bell peppers, diced onions, tomatoes, sweet corn & herbs.',
+    image: 'https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: true,
+    sizes: {
+      Small: 90,
+      Medium: 170,
+      Large: 255
     }
-    ::-webkit-scrollbar-thumb {
-      background: #f59e0b;
-      border-radius: 4px;
+  },
+  {
+    id: 'pz-5',
+    name: 'Farmhouse Pizza',
+    category: 'Pizza',
+    description: 'Ultimate overload of paneer, capsicum, mushroom, olives & triple cheese blend.',
+    image: 'https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: true,
+    sizes: {
+      Small: 99,
+      Medium: 190,
+      Large: 285
     }
-  </style>
-</head>
-<body class="min-h-screen flex flex-col antialiased selection:bg-amber-500 selection:text-black pb-24">
+  },
 
-  <!-- TOP ANNOUNCEMENT BAR -->
-  <div class="bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 text-black text-xs sm:text-sm font-semibold py-2 px-4 text-center tracking-wide">
-    📍 बम्बर कलाग्राम में स्थित, नवीन अस्पताल के सामने! | Call/WhatsApp: +91 74858 69591
-  </div>
+  // COLD DRINKS & SPECIAL COMBOS
+  {
+    id: 'cd-1',
+    name: 'Chilled Thums Up / Sprite',
+    category: 'Cold Drinks',
+    price: null,
+    priceNote: 'Price Coming Soon',
+    description: 'Ice cold carbonated soft drink bottle.',
+    image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: false
+  },
+  {
+    id: 'cm-1',
+    name: 'Shyam Supreme Duo Combo',
+    category: 'Special Cafe Combos',
+    price: null,
+    priceNote: 'Price Coming Soon',
+    description: 'Cheese Pizza Medium + Aalu Burger + 2x Cold Coffee (Ask at counter).',
+    image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: false
+  }
+];
 
-  <!-- NAVIGATION HEADER -->
-  <header class="sticky top-0 z-40 bg-stone-950/90 backdrop-blur-md border-b border-stone-800 shadow-xl">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-      
-      <!-- Brand Logo / Identity -->
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-amber-500/10 border border-amber-500/40 flex items-center justify-center text-amber-500 font-bold text-xl">
-          🕉️
-        </div>
-        <div>
-          <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-1.5 font-serif-title">
-            SHRI SHYAM <span class="text-amber-500">CAFE</span>
-          </h1>
-          <p class="text-[10px] sm:text-xs text-stone-400 font-medium tracking-wider uppercase">
-            Fresh • Tasty • Delicious
-          </p>
-        </div>
-      </div>
+const CATEGORIES = [
+  'All',
+  'Pizza',
+  'Burgers',
+  'Sandwiches',
+  'Chinese Food',
+  'Momos',
+  'Snacks',
+  'Tea & Coffee',
+  'Cold Drinks',
+  'Special Cafe Combos'
+];
 
-      <!-- Quick Action Buttons -->
-      <div class="flex items-center gap-2 sm:gap-3">
-        <button onclick="openBookingModal()" class="px-3.5 py-1.5 rounded-full border border-amber-500/60 text-amber-400 hover:bg-amber-500 hover:text-black transition text-xs sm:text-sm font-medium flex items-center gap-1.5">
-          <i data-lucide="calendar-check" class="w-4 h-4"></i>
-          <span>Book Table</span>
-        </button>
+export default function App() {
+  // Navigation State
+  const [activeTab, setActiveTab] = useState('home'); // 'home', 'menu', 'checkout', 'booking', 'admin', 'contact'
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
 
-        <button onclick="toggleCartDrawer()" class="relative bg-amber-500 hover:bg-amber-400 text-black font-bold px-3.5 py-1.5 rounded-full transition flex items-center gap-1.5 text-xs sm:text-sm shadow-lg shadow-amber-500/20">
-          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
-          <span class="hidden sm:inline">Cart</span>
-          <span id="cart-count-badge" class="ml-0.5 bg-black text-amber-400 text-xs px-2 py-0.5 rounded-full">0</span>
-        </button>
-      </div>
+  // Toast / Banner Notification System
+  const [toastMessage, setToastMessage] = useState(null);
+  const showToast = (msg, type = 'success') => {
+    setToastMessage({ msg, type });
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
-    </div>
-  </header>
+  // Menu State (Editable by Admin & Synced with customer view)
+  const [menuItems, setMenuItems] = useState(() => {
+    const saved = localStorage.getItem('ssc_menu_items');
+    return saved ? JSON.parse(saved) : INITIAL_MENU_ITEMS;
+  });
 
-  <!-- HERO SECTION -->
-  <section class="relative bg-gradient-to-b from-stone-900 to-stone-950 py-10 px-4 border-b border-stone-800 text-center">
-    <div class="max-w-3xl mx-auto space-y-3">
-      <span class="inline-block px-3 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-full text-xs font-semibold tracking-wider uppercase">
-        स्वाद ऐसा... कि बार-बार आने का मन करे ❤️
-      </span>
-      <h2 class="text-3xl sm:text-5xl font-extrabold text-white font-serif-title leading-tight">
-        खाओ, मुस्कुराओ, <span class="text-amber-500 underline decoration-amber-500/40">फिर आओ!</span>
-      </h2>
-      <p class="text-stone-400 text-sm sm:text-base max-w-xl mx-auto">
-        Enjoy fresh momos, cheesy pizzas, loaded burgers, hot tea, cold coffee & refreshing drinks right here at Bambar Kalagram.
-      </p>
+  // Selected Pizza Sizes state for items in menu { [itemId]: 'Small' | 'Medium' | 'Large' }
+  const [pizzaSizes, setPizzaSizes] = useState({
+    'pz-1': 'Small',
+    'pz-2': 'Small',
+    'pz-3': 'Small',
+    'pz-4': 'Small',
+    'pz-5': 'Small'
+  });
 
-      <!-- Search & Filter Input -->
-      <div class="pt-4 max-w-md mx-auto relative">
-        <i data-lucide="search" class="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-500"></i>
-        <input 
-          type="text" 
-          id="search-input" 
-          oninput="handleSearch(this.value)"
-          placeholder="Search Momos, Burgers, Pizza, Shakes..." 
-          class="w-full pl-11 pr-4 py-2.5 rounded-xl bg-stone-900/90 border border-stone-700 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-sm text-white placeholder-stone-500 outline-none transition"
-        />
-      </div>
-    </div>
-  </section>
+  // Cart State
+  const [cart, setCart] = useState(() => {
+    const saved = localStorage.getItem('ssc_cart');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
 
-  <!-- CATEGORY PILLS BAR -->
-  <section class="sticky top-[61px] z-30 bg-stone-950/95 border-b border-stone-800 backdrop-blur py-2.5 px-4">
-    <div class="max-w-6xl mx-auto flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 text-sm">
-      <button onclick="filterCategory('all')" class="cat-pill active-cat whitespace-nowrap px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition bg-amber-500 text-black">
-        All Items
-      </button>
-      <button onclick="filterCategory('snacks')" class="cat-pill whitespace-nowrap px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition bg-stone-900 text-stone-300 hover:text-white border border-stone-800">
-        🥟 Snacks & Momos
-      </button>
-      <button onclick="filterCategory('fastfood')" class="cat-pill whitespace-nowrap px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition bg-stone-900 text-stone-300 hover:text-white border border-stone-800">
-        🍔 Burgers & Fries
-      </button>
-      <button onclick="filterCategory('pizza')" class="cat-pill whitespace-nowrap px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition bg-stone-900 text-stone-300 hover:text-white border border-stone-800">
-        🍕 Pizzas
-      </button>
-      <button onclick="filterCategory('beverages')" class="cat-pill whitespace-nowrap px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition bg-stone-900 text-stone-300 hover:text-white border border-stone-800">
-        ☕ Tea, Coffee & Shakes
-      </button>
-      <button onclick="filterCategory('colddrinks')" class="cat-pill whitespace-nowrap px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition bg-stone-900 text-stone-300 hover:text-white border border-stone-800">
-        🥤 Cold Drinks
-      </button>
-    </div>
-  </section>
+  // Store editable parameters (Admin configurable & persistent)
+  const [deliveryFee, setDeliveryFee] = useState(() => {
+    const saved = localStorage.getItem('ssc_delivery_fee');
+    return saved !== null ? Number(saved) : 50;
+  });
+  const [deliveryFeeInput, setDeliveryFeeInput] = useState(deliveryFee.toString());
 
-  <!-- MAIN MENU CONTAINER -->
-  <main class="max-w-6xl mx-auto px-4 py-8 flex-1">
-    <div id="menu-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-      <!-- Cards dynamically generated by JS -->
-    </div>
-    
-    <div id="no-results" class="hidden text-center py-16 text-stone-500">
-      <i data-lucide="utensils-crossed" class="w-12 h-12 mx-auto mb-3 opacity-40"></i>
-      <p class="text-lg">No dishes found matching your search.</p>
-    </div>
-  </main>
+  const [restaurantSettings, setRestaurantSettings] = useState(() => {
+    const saved = localStorage.getItem('ssc_restaurant_settings');
+    return saved
+      ? JSON.parse(saved)
+      : {
+          phone: '+91 74858 69591',
+          whatsapp: '+91 74858 69591',
+          upiId: '9534518551@ybl',
+          address: 'बम्बर कलाग्राम में स्थित, नवीन अस्पताल के सामने!',
+          hours: '8:00 AM – 10:00 PM Daily',
+          isOpen: true
+        };
+  });
 
-  <!-- FOOTER -->
-  <footer class="bg-stone-950 border-t border-stone-800 py-8 px-4 text-center text-xs text-stone-500 space-y-2">
-    <p class="text-stone-300 font-semibold">श्री श्याम कैफ़े (Shri Shyam Cafe)</p>
-    <p>बम्बर कलाग्राम में स्थित, नवीन अस्पताल के सामने | Direct Support: +91 74858 69591</p>
-    <p>© All Rights Reserved. Instant WhatsApp ordering enabled.</p>
-  </footer>
+  // Admin Security Password/PIN (Default: 1234, editable by Owner)
+  const [adminPassword, setAdminPassword] = useState(() => {
+    return localStorage.getItem('ssc_admin_password') || '1234';
+  });
+  const [adminPinInput, setAdminPinInput] = useState('');
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+  const [adminAuthError, setAdminAuthError] = useState('');
 
-  <!-- FLOATING CART BAR (MOBILE PREVIEW) -->
-  <div id="floating-bar" class="fixed bottom-4 left-4 right-4 max-w-md mx-auto bg-amber-500 text-black p-3.5 rounded-2xl shadow-2xl flex items-center justify-between z-40 hidden transition-all">
-    <div class="flex items-center gap-3">
-      <span class="w-9 h-9 rounded-xl bg-black text-amber-400 flex items-center justify-center font-bold text-sm" id="floating-count">
-        0
-      </span>
-      <div>
-        <div class="text-xs font-bold uppercase tracking-wider text-black/80">Total Amount</div>
-        <div class="text-lg font-extrabold text-black" id="floating-total">₹0</div>
-      </div>
-    </div>
-    <button onclick="toggleCartDrawer()" class="bg-black hover:bg-stone-900 text-white font-bold px-4 py-2 rounded-xl text-sm flex items-center gap-2 transition">
-      <span>View Cart</span>
-      <i data-lucide="arrow-right" class="w-4 h-4"></i>
-    </button>
-  </div>
+  // Password Change state
+  const [currPasswordInput, setCurrPasswordInput] = useState('');
+  const [newPasswordInput, setNewPasswordInput] = useState('');
+  const [confirmPasswordInput, setConfirmPasswordInput] = useState('');
+  const [passwordChangeError, setPasswordChangeError] = useState('');
+  const [passwordChangeSuccess, setPasswordChangeSuccess] = useState('');
 
-  <!-- CART & CHECKOUT DRAWER -->
-  <div id="cart-drawer" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex justify-end hidden">
-    <div class="w-full max-w-md bg-stone-900 h-full flex flex-col border-l border-stone-800 shadow-2xl p-5 overflow-y-auto">
-      
-      <!-- Drawer Header -->
-      <div class="flex items-center justify-between border-b border-stone-800 pb-4">
-        <div class="flex items-center gap-2">
-          <i data-lucide="shopping-bag" class="text-amber-500 w-5 h-5"></i>
-          <h3 class="text-lg font-bold text-white">Your Order Details</h3>
-        </div>
-        <button onclick="toggleCartDrawer()" class="p-1 rounded-lg text-stone-400 hover:text-white hover:bg-stone-800">
-          <i data-lucide="x" class="w-6 h-6"></i>
-        </button>
-      </div>
+  // Admin Sub-Tab
+  const [adminSubTab, setAdminSubTab] = useState('menu-adjuster'); // 'menu-adjuster', 'orders', 'bookings', 'settings'
 
-      <!-- Cart Item List -->
-      <div id="cart-items" class="flex-1 overflow-y-auto py-4 space-y-3">
-        <!-- Rendered by JS -->
-      </div>
+  // Admin: Add Product Modal State
+  const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
+  const [newProductForm, setNewProductForm] = useState({
+    name: '',
+    category: 'Snacks',
+    description: '',
+    price: '',
+    image: 'https://images.unsplash.com/photo-1541696432-82c6da8ce7bf?auto=format&fit=crop&w=600&q=80',
+    available: true,
+    hasSizes: false,
+    smallPrice: '',
+    medPrice: '',
+    largePrice: ''
+  });
 
-      <!-- Checkout Form -->
-      <div class="border-t border-stone-800 pt-4 space-y-3 text-sm">
-        
-        <div class="flex justify-between text-stone-400">
-          <span>Subtotal</span>
-          <span class="text-white font-semibold" id="cart-subtotal">₹0</span>
-        </div>
-        <div class="flex justify-between text-base font-extrabold text-amber-400 border-t border-stone-800 pt-2">
-          <span>Grand Total</span>
-          <span id="cart-total">₹0</span>
-        </div>
+  // Admin: Edit Product Modal State
+  const [editingProduct, setEditingProduct] = useState(null);
 
-        <div class="space-y-2 pt-2">
-          <label class="block text-xs font-semibold text-stone-300 uppercase">Dining Option</label>
-          <div class="grid grid-cols-3 gap-2">
-            <button type="button" onclick="setDiningType('Dine-in')" id="type-dine" class="dining-pill active py-2 rounded-lg text-xs font-semibold border border-amber-500 bg-amber-500 text-black">
-              Dine-In
-            </button>
-            <button type="button" onclick="setDiningType('Takeaway')" id="type-takeaway" class="dining-pill py-2 rounded-lg text-xs font-semibold border border-stone-700 bg-stone-800 text-stone-300">
-              Takeaway
-            </button>
-            <button type="button" onclick="setDiningType('Delivery')" id="type-delivery" class="dining-pill py-2 rounded-lg text-xs font-semibold border border-stone-700 bg-stone-800 text-stone-300">
-              Delivery
-            </button>
-          </div>
-        </div>
+  // Checkout State
+  const [orderType, setOrderType] = useState('delivery'); // 'delivery' | 'takeaway'
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [landmark, setLandmark] = useState('');
+  const [specialInstructions, setSpecialInstructions] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('upi'); // 'upi', 'cod'
+  const [upiRefId, setUpiRefId] = useState('');
+  const [lastPlacedOrder, setLastPlacedOrder] = useState(null);
+  const [orderConfirmedModal, setOrderConfirmedModal] = useState(false);
 
-        <div class="space-y-2">
-          <input 
-            type="text" 
-            id="cust-name" 
-            placeholder="Your Full Name *" 
-            class="w-full px-3 py-2 rounded-lg bg-stone-800 border border-stone-700 text-white placeholder-stone-500 text-xs focus:border-amber-500 outline-none"
-            required
-          />
-         <input 
-            type="tel" 
-            id="cust-phone" 
-            placeholder="Phone Number *" 
-            class="w-full px-3 py-2 rounded-lg bg-stone-800 border border-stone-700 text-white placeholder-stone-500 text-xs focus:border-amber-500 outline-none"
-            required
-         />
-          <input 
-            type="text" 
-            id="cust-table" 
-            placeholder="Table Number / Delivery Address (Optional)" 
-            class="w-full px-3 py-2 rounded-lg bg-stone-800 border border-stone-700 text-white placeholder-stone-500 text-xs focus:border-amber-500 outline-none"
-          />
-          <textarea 
-            id="cust-notes" 
-            rows="2" 
-            placeholder="Special instructions (e.g. Extra spicy, less sugar, etc.)" 
-            class="w-full px-3 py-2 rounded-lg bg-stone-800 border border-stone-700 text-white placeholder-stone-500 text-xs focus:border-amber-500 outline-none resize-none"
-          ></textarea>
-        </div>
+  // Table Booking State
+  const [bookingForm, setBookingForm] = useState({
+    name: '',
+    phone: '',
+    date: '',
+    time: '',
+    guests: '2',
+    request: ''
+  });
+  const [bookingConfirmedModal, setBookingConfirmedModal] = useState(null);
 
-        <!-- WhatsApp Checkout Trigger -->
-        <button 
-          onclick="sendWhatsAppOrder()" 
-          class="w-full py-3 bg-[#25D366] hover:bg-[#20ba5a] text-black font-extrabold rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-[#25D366]/20"
-        >
-          <i data-lucide="message-circle" class="w-5 h-5 fill-black"></i>
-          <span>Confirm via WhatsApp</span>
-        </button>
-      </div>
+  // Saved Orders & Bookings
+  const [ordersList, setOrdersList] = useState(() => {
+    const saved = localStorage.getItem('ssc_orders');
+    return saved
+      ? JSON.parse(saved)
+      : [
+          {
+            orderId: 'SSC1001',
+            date: '2026-10-16 14:30',
+            customerName: 'Rahul Kumar',
+            customerPhone: '9876543210',
+            orderType: 'delivery',
+            items: [
+              { name: 'Cheese Pizza', size: 'Medium', price: 120, qty: 1 },
+              { name: 'Special Tea', price: 10, qty: 2 }
+            ],
+            subtotal: 140,
+            deliveryCharge: 50,
+            total: 190,
+            paymentMethod: 'UPI',
+            paymentStatus: 'Submitted',
+            upiRefId: 'UTR492837190',
+            deliveryAddress: 'Near Primary School, Babhar Kalagram',
+            status: 'Preparing'
+          }
+        ];
+  });
+  const [bookingsList, setBookingsList] = useState(() => {
+    const saved = localStorage.getItem('ssc_bookings');
+    return saved
+      ? JSON.parse(saved)
+      : [
+          {
+            bookingId: 'TB-742',
+            name: 'Vikram Singh',
+            phone: '9835012345',
+            date: '2026-10-18',
+            time: '19:30',
+            guests: '4',
+            request: 'Window corner seat',
+            status: 'Accepted'
+          }
+        ];
+  });
 
-    </div>
-  </div>
+  // LocalStorage Sync
+  useEffect(() => {
+    localStorage.setItem('ssc_cart', JSON.stringify(cart));
+  }, [cart]);
 
-  <!-- TABLE RESERVATION MODAL -->
-  <div id="booking-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-stone-900 border border-stone-800 rounded-2xl w-full max-w-md p-6 relative">
-      <button onclick="closeBookingModal()" class="absolute top-4 right-4 text-stone-400 hover:text-white">
-        <i data-lucide="x" class="w-5 h-5"></i>
-      </button>
+  useEffect(() => {
+    localStorage.setItem('ssc_orders', JSON.stringify(ordersList));
+  }, [ordersList]);
 
-      <div class="text-center mb-5">
-        <span class="text-2xl">🍽️</span>
-        <h3 class="text-xl font-bold text-white mt-1">Book a Table</h3>
-        <p class="text-xs text-stone-400">Shri Shyam Cafe, Bambar Kalagram</p>
-      </div>
+  useEffect(() => {
+    localStorage.setItem('ssc_bookings', JSON.stringify(bookingsList));
+  }, [bookingsList]);
 
-      <div class="space-y-3 text-sm">
-        <div>
-          <label class="block text-xs font-semibold text-stone-300 mb-1">Name</label>
-          <input type="text" id="book-name" placeholder="Enter your name" class="w-full px-3 py-2 rounded-lg bg-stone-800 border border-stone-700 text-white text-xs outline-none focus:border-amber-500" />
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-stone-300 mb-1">Guests Count</label>
-          <input type="number" id="book-guests" min="1" max="25" value="2" class="w-full px-3 py-2 rounded-lg bg-stone-800 border border-stone-700 text-white text-xs outline-none focus:border-amber-500" />
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block text-xs font-semibold text-stone-300 mb-1">Date</label>
-            <input type="date" id="book-date" class="w-full px-3 py-2 rounded-lg bg-stone-800 border border-stone-700 text-white text-xs outline-none focus:border-amber-500" />
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-stone-300 mb-1">Time</label>
-            <input type="time" id="book-time" class="w-full px-3 py-2 rounded-lg bg-stone-800 border border-stone-700 text-white text-xs outline-none focus:border-amber-500" />
-          </div>
-        </div>
+  useEffect(() => {
+    localStorage.setItem('ssc_menu_items', JSON.stringify(menuItems));
+  }, [menuItems]);
 
-        <button onclick="sendWhatsAppBooking()" class="w-full mt-2 py-3 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-xl transition flex items-center justify-center gap-2">
-          <i data-lucide="calendar-check" class="w-4 h-4"></i>
-          <span>Send Booking Request on WhatsApp</span>
-        </button>
-      </div>
-    </div>
-  </div>
+  useEffect(() => {
+    localStorage.setItem('ssc_delivery_fee', deliveryFee.toString());
+  }, [deliveryFee]);
 
-  <!-- SCRIPT LOGIC -->
-  <script>
-    const CAFE_PHONE = "917485869591"; // +91 74858 69591
+  useEffect(() => {
+    localStorage.setItem('ssc_restaurant_settings', JSON.stringify(restaurantSettings));
+  }, [restaurantSettings]);
 
-    // EXACT MENU DATABASE FROM ALL POSTERS
-    const menuData = [
-      // 1. Snacks Menu (Image 2)
-      { id: 101, name: "Bread Pokoda", price: 12, category: "snacks", tag: "Hot Snack", desc: "Crispy fried golden bread pakoda" },
-      { id: 102, name: "Paneer Bread Pokoda", price: 25, category: "snacks", tag: "Bestseller", desc: "Stuffed with fresh cottage paneer slice" },
-      { id: 103, name: "Steam Momo", price: 10, category: "snacks", tag: "Street Special", desc: "Hot steamed momos with spicy red chutney" },
-      { id: 104, name: "Fry Momo", price: 20, category: "snacks", tag: "Crispy", desc: "Deep-fried crunchy dumplings" },
-      { id: 105, name: "Roll", price: 12, category: "snacks", tag: "Quick Bite", desc: "Fresh wrap stuffed with tasty filling" },
+  useEffect(() => {
+    localStorage.setItem('ssc_admin_password', adminPassword);
+  }, [adminPassword]);
 
-      // 2. Snacks & Fast Food (Image 3)
-      { id: 201, name: "Aalu Tikki Burger", price: 30, category: "fastfood", tag: "Popular", desc: "Crisp potato patty, mayo & fresh greens" },
-      { id: 202, name: "Paneer Tikki Burger", price: 45, category: "fastfood", tag: "Chef Special", desc: "Soft & spiced paneer cutlet in toasted buns" },
-      { id: 203, name: "Sandwich", price: 40, category: "fastfood", tag: "Grilled", desc: "Toasted sandwich with veggies and seasoning" },
-      { id: 204, name: "Aalu Fries", price: 15, category: "fastfood", tag: "Snack", desc: "Salted crispy potato french fries" },
-      { id: 205, name: "Pani Puri", price: 10, category: "fastfood", tag: "Crispy & Tangy", desc: "Flavourful spicy mint water puris" },
-      { id: 206, name: "Noodles", price: 30, category: "fastfood", tag: "Desi Chinese", desc: "Wok-tossed spicy vegetable chowmein" },
-      { id: 207, name: "Paneer Noodles", price: 50, category: "fastfood", tag: "Loaded", desc: "Chowmein tossed with rich paneer cubes" },
+  // Cart Calculations (Dynamically respects Admin's custom delivery fee)
+  const cartSubtotal = useMemo(() => {
+    return cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  }, [cart]);
 
-      // 3. Pizza Menu (Image 4)
-      { id: 301, name: "Cheese Pizza", price: 65, category: "pizza", tag: "Classic", desc: "Classic rich melted mozzarella cheese base" },
-      { id: 302, name: "Double Cheese Pizza", price: 75, category: "pizza", tag: "Extra Cheesy", desc: "Loaded with an extra layer of mozzarella" },
-      { id: 303, name: "Paneer Pizza", price: 85, category: "pizza", tag: "Desi Favorite", desc: "Marinated spiced paneer chunks on cheese base" },
-      { id: 304, name: "Veggies Pizza", price: 90, category: "pizza", tag: "Garden Fresh", desc: "Crispy bell peppers, onion, sweet corn & olives" },
-      { id: 305, name: "Farmhouse Pizza", price: 99, category: "pizza", tag: "Supreme", desc: "Full loaded vegetable and paneer fiesta" },
+  const activeDeliveryCharge = orderType === 'delivery' ? (cart.length > 0 ? deliveryFee : 0) : 0;
+  const cartTotal = cartSubtotal + activeDeliveryCharge;
+  const totalCartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
-      // 4. Tea & Coffee & Shakes Menu (Image 5)
-      { id: 401, name: "Cold Coffee (100ml)", price: 20, category: "beverages", tag: "Chilled", desc: "Refreshing quick cold coffee cup" },
-      { id: 402, name: "Cold Coffee (250ml)", price: 40, category: "beverages", tag: "Big Mug", desc: "Thick creamy chilled coffee blend" },
-      { id: 403, name: "Black Coffee", price: 15, category: "beverages", tag: "Strong", desc: "Pure hot aromatic black coffee" },
-      { id: 404, name: "Hot Coffee", price: 20, category: "beverages", tag: "Warm", desc: "Creamy steamed milk coffee" },
-      { id: 405, name: "Tea", price: 10, category: "beverages", tag: "Kadak", desc: "Traditional Indian masala chai" },
-      { id: 406, name: "Black Tea", price: 8, category: "beverages", tag: "Light", desc: "Soothing hot black tea infusion" },
-      { id: 407, name: "Oreo Shake", price: 50, category: "beverages", tag: "Shake", desc: "Thick chocolate oreo cookies milkshake" },
-      { id: 408, name: "KitKat Shake", price: 50, category: "beverages", tag: "Shake", desc: "Blended with crunchy KitKat wafers" },
-      { id: 409, name: "Chocolate Shake", price: 50, category: "beverages", tag: "Shake", desc: "Rich chocolate drizzle and cocoa blend" },
-      { id: 410, name: "Lassi", price: 20, category: "beverages", tag: "Traditional", desc: "Cool sweet curd refresher" },
+  // Handler: Add to Cart
+  const handleAddToCart = (item) => {
+    if (!item.available) {
+      showToast(`${item.name} is currently out of stock.`, 'error');
+      return;
+    }
+    if (item.price === null && !item.hasSizes) {
+      showToast("Price coming soon. Please contact cafe on WhatsApp!", 'info');
+      return;
+    }
 
-      // 5. Cold Drinks (Image 6)
-      { id: 501, name: "Sprite", price: 20, category: "colddrinks", tag: "Soda", desc: "Crisp lemon-lime refreshment" },
-      { id: 502, name: "Coca-Cola", price: 20, category: "colddrinks", tag: "Soda", desc: "Original refreshing cola" },
-      { id: 503, name: "Thums Up", price: 20, category: "colddrinks", tag: "Toofani", desc: "Strong charged cola" },
-      { id: 504, name: "Monster Energy", price: 125, category: "colddrinks", tag: "Energy Can", desc: "High octane energy booster" },
-      { id: 505, name: "7 Up", price: 20, category: "colddrinks", tag: "Soda", desc: "Chilled lemon beverage" },
-      { id: 506, name: "Sting", price: 20, category: "colddrinks", tag: "Energy", desc: "Sweet red berry energy kick" },
-      { id: 507, name: "Mirinda", price: 20, category: "colddrinks", tag: "Orange", desc: "Zesty orange sparkle" },
-      { id: 508, name: "Pepsi", price: 20, category: "colddrinks", tag: "Chilled", desc: "Bold cola flavor" },
-      { id: 509, name: "Mountain Dew", price: 20, category: "colddrinks", tag: "Darr Ke Aage Jeet", desc: "Citrus blast" },
-      { id: 510, name: "Fanta", price: 20, category: "colddrinks", tag: "Orange", desc: "Tangy sweet bubbly drink" },
-      { id: 511, name: "Red Bull", price: 125, category: "colddrinks", tag: "Energy Can", desc: "Vitalizes body and mind" },
-      { id: 512, name: "Appy Fizz", price: 20, category: "colddrinks", tag: "Apple Soda", desc: "Sparkling apple drink" },
-      { id: 513, name: "Limca", price: 20, category: "colddrinks", tag: "Lime", desc: "Fresh lime and lemony fizz" },
-      { id: 514, name: "Maaza", price: 20, category: "colddrinks", tag: "Mango", desc: "Rich Alphonso mango pulp juice" },
-      { id: 515, name: "Nestea", price: 25, category: "colddrinks", tag: "Iced Tea", desc: "Refreshing lemon iced tea" },
-      { id: 516, name: "Iced Tea (Glass)", price: 35, category: "colddrinks", tag: "Cafe Made", desc: "Fresh brewed with mint and lemon slice" }
-    ];
+    let itemToAdd = { ...item };
+    let cartItemId = item.id;
+    let selectedSize = null;
 
-    let cart = {};
-    let currentCategory = "all";
-    let searchQuery = "";
-    let selectedDiningType = "Dine-in";
+    if (item.hasSizes) {
+      selectedSize = pizzaSizes[item.id] || 'Small';
+      itemToAdd.price = item.sizes[selectedSize];
+      cartItemId = `${item.id}-${selectedSize}`;
+    }
 
-    // INITIALIZE APP
-    window.addEventListener("DOMContentLoaded", () => {
-      renderMenu();
-      updateCartUI();
-      lucide.createIcons();
+    setCart((prevCart) => {
+      const existing = prevCart.find((ci) => ci.cartId === cartItemId);
+      if (existing) {
+        return prevCart.map((ci) =>
+          ci.cartId === cartItemId ? { ...ci, quantity: ci.quantity + 1 } : ci
+        );
+      } else {
+        return [
+          ...prevCart,
+          {
+            ...itemToAdd,
+            cartId: cartItemId,
+            selectedSize,
+            quantity: 1
+          }
+        ];
+      }
     });
 
-    // RENDER MENU ITEMS
-    function renderMenu() {
-      const grid = document.getElementById("menu-grid");
-      const noResults = document.getElementById("no-results");
-      grid.innerHTML = "";
+    showToast(`Added ${item.name} to cart!`);
+    setCartDrawerOpen(true);
+  };
 
-      const filtered = menuData.filter(item => {
-        const matchesCategory = currentCategory === "all" || item.category === currentCategory;
-        const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                              item.desc.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesCategory && matchesSearch;
-      });
+  // Handler: Update Cart Quantity
+  const handleUpdateQty = (cartId, delta) => {
+    setCart((prev) =>
+      prev
+        .map((item) => {
+          if (item.cartId === cartId) {
+            const newQty = item.quantity + delta;
+            return newQty > 0 ? { ...item, quantity: newQty } : null;
+          }
+          return item;
+        })
+        .filter(Boolean)
+    );
+  };
 
-      if (filtered.length === 0) {
-        noResults.classList.remove("hidden");
-      } else {
-        noResults.classList.add("hidden");
+  // Handler: Remove Cart Item
+  const handleRemoveFromCart = (cartId) => {
+    setCart((prev) => prev.filter((item) => item.cartId !== cartId));
+  };
+
+  // Dynamic UPI URI based on current cart total & configured UPI ID
+  const dynamicUpiUri = useMemo(() => {
+    const merchantUpi = restaurantSettings.upiId || '9534518551@ybl';
+    const merchantName = encodeURIComponent('Shri Shyam Cafe');
+    return `upi://pay?pa=${merchantUpi}&pn=${merchantName}&am=${cartTotal}&cu=INR&tn=Order%20Payment`;
+  }, [cartTotal, restaurantSettings.upiId]);
+
+  // Order Placement logic
+  const handlePlaceOrder = (e) => {
+    e.preventDefault();
+
+    if (cart.length === 0) {
+      showToast('Your cart is empty. Please add items first.', 'error');
+      return;
+    }
+
+    if (!customerName.trim() || !customerPhone.trim()) {
+      showToast('Please enter your name and mobile number.', 'error');
+      return;
+    }
+
+    if (customerPhone.trim().length < 10) {
+      showToast('Please enter a valid 10-digit mobile number.', 'error');
+      return;
+    }
+
+    if (orderType === 'delivery' && !deliveryAddress.trim()) {
+      showToast('Please provide a delivery address for Home Delivery.', 'error');
+      return;
+    }
+
+    const orderNumber = `SSC${Math.floor(1000 + Math.random() * 9000)}`;
+    const now = new Date();
+    const formattedDate = `${now.toLocaleDateString()} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+    const newOrder = {
+      orderId: orderNumber,
+      date: formattedDate,
+      customerName: customerName.trim(),
+      customerPhone: customerPhone.trim(),
+      orderType,
+      items: cart.map((c) => ({
+        name: c.name,
+        size: c.selectedSize,
+        price: c.price,
+        qty: c.quantity
+      })),
+      subtotal: cartSubtotal,
+      deliveryCharge: activeDeliveryCharge,
+      total: cartTotal,
+      paymentMethod: paymentMethod === 'upi' ? 'UPI / QR' : 'Cash on Delivery',
+      paymentStatus: paymentMethod === 'upi' ? (upiRefId ? 'Submitted' : 'Pending') : 'Pending (COD)',
+      upiRefId: upiRefId.trim() || 'N/A',
+      deliveryAddress: orderType === 'delivery' ? deliveryAddress.trim() : 'Takeaway at Cafe Counter',
+      landmark: landmark.trim(),
+      specialInstructions: specialInstructions.trim(),
+      status: 'Pending'
+    };
+
+    setOrdersList((prev) => [newOrder, ...prev]);
+    setLastPlacedOrder(newOrder);
+    setOrderConfirmedModal(true);
+    setCart([]);
+    setCartDrawerOpen(false);
+  };
+
+  // WhatsApp Order Link generator
+  const createWhatsAppOrderLink = (order) => {
+    const rawPhone = restaurantSettings.phone.replace(/[^0-9]/g, '');
+    const phoneNumber = rawPhone.length === 10 ? `91${rawPhone}` : rawPhone;
+
+    let itemLines = order.items
+      .map((it) => {
+        const sizeStr = it.size ? ` (${it.size})` : '';
+        return `• ${it.name}${sizeStr} x ${it.qty} – ₹${it.price * it.qty}`;
+      })
+      .join('\n');
+
+    const message = `Hello Shri Shyam Cafe,
+I would like to place an order.
+
+Order No: #${order.orderId}
+Customer Name: ${order.customerName}
+Mobile: ${order.customerPhone}
+Order Type: ${order.orderType === 'delivery' ? 'Home Delivery' : 'Takeaway (Pick up)'}
+
+Items:
+${itemLines}
+
+Subtotal: ₹${order.subtotal}
+Delivery Charge: ₹${order.deliveryCharge}
+Total Payable: ₹${order.total}
+
+Payment Method: ${order.paymentMethod}
+${order.upiRefId !== 'N/A' ? `UPI Ref/UTR: ${order.upiRefId}` : ''}
+${order.orderType === 'delivery' ? `Delivery Address: ${order.deliveryAddress}${order.landmark ? ` (Landmark: ${order.landmark})` : ''}` : ''}
+${order.specialInstructions ? `Special Note: ${order.specialInstructions}` : ''}
+
+Please confirm my order.`;
+
+    return `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+  };
+
+  // Table Booking
+  const handleBookingSubmit = (e) => {
+    e.preventDefault();
+    if (!bookingForm.name || !bookingForm.phone || !bookingForm.date || !bookingForm.time) {
+      showToast('Please fill out all required reservation fields.', 'error');
+      return;
+    }
+
+    const bookingRef = `TB-${Math.floor(100 + Math.random() * 900)}`;
+    const newBooking = {
+      bookingId: bookingRef,
+      ...bookingForm,
+      status: 'Pending'
+    };
+
+    setBookingsList((prev) => [newBooking, ...prev]);
+    setBookingConfirmedModal(newBooking);
+    setBookingForm({
+      name: '',
+      phone: '',
+      date: '',
+      time: '',
+      guests: '2',
+      request: ''
+    });
+  };
+
+  const createWhatsAppBookingLink = (booking) => {
+    const rawPhone = restaurantSettings.phone.replace(/[^0-9]/g, '');
+    const phoneNumber = rawPhone.length === 10 ? `91${rawPhone}` : rawPhone;
+    const message = `Hello Shri Shyam Cafe,
+I would like to reserve a table.
+
+Booking Ref: #${booking.bookingId}
+Name: ${booking.name}
+Phone: ${booking.phone}
+Date: ${booking.date}
+Time: ${booking.time}
+Guests: ${booking.guests} Person(s)
+${booking.request ? `Special Request: ${booking.request}` : ''}
+
+Please confirm my reservation.`;
+
+    return `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+  };
+
+  // --- ADMIN FUNCTIONALITIES ---
+  const handleAdminLogin = (e) => {
+    e.preventDefault();
+    if (adminPinInput.trim() === adminPassword) {
+      setIsAdminAuthenticated(true);
+      setAdminAuthError('');
+      showToast('Welcome, Cafe Owner! Admin unlocked.');
+    } else {
+      setAdminAuthError('Invalid Admin Password/PIN.');
+    }
+  };
+
+  const handleChangePassword = (e) => {
+    e.preventDefault();
+    setPasswordChangeError('');
+    setPasswordChangeSuccess('');
+
+    if (currPasswordInput !== adminPassword) {
+      setPasswordChangeError('Current password does not match.');
+      return;
+    }
+
+    if (!newPasswordInput.trim() || newPasswordInput.length < 4) {
+      setPasswordChangeError('New password must be at least 4 characters.');
+      return;
+    }
+
+    if (newPasswordInput !== confirmPasswordInput) {
+      setPasswordChangeError('New passwords do not match.');
+      return;
+    }
+
+    setAdminPassword(newPasswordInput.trim());
+    setCurrPasswordInput('');
+    setNewPasswordInput('');
+    setConfirmPasswordInput('');
+    setPasswordChangeSuccess('Admin password changed successfully!');
+    showToast('Admin password updated successfully!');
+  };
+
+  const handleUpdateDeliveryFee = (e) => {
+    e.preventDefault();
+    const val = Number(deliveryFeeInput);
+    if (isNaN(val) || val < 0) {
+      showToast('Please enter a valid positive delivery charge amount.', 'error');
+      return;
+    }
+    setDeliveryFee(val);
+    showToast(`Standard Delivery Charge updated to ₹${val}!`);
+  };
+
+  // Toggle In Stock / Out of Stock
+  const handleToggleStock = (itemId) => {
+    setMenuItems((prev) =>
+      prev.map((it) => {
+        if (it.id === itemId) {
+          const updated = !it.available;
+          showToast(`${it.name} is now ${updated ? 'In Stock' : 'Out of Stock'}`);
+          return { ...it, available: updated };
+        }
+        return it;
+      })
+    );
+  };
+
+  // Update Single Price Directly in Adjuster
+  const handleQuickPriceChange = (itemId, newPrice) => {
+    const val = newPrice === '' ? null : Number(newPrice);
+    setMenuItems((prev) =>
+      prev.map((it) => (it.id === itemId ? { ...it, price: val } : it))
+    );
+  };
+
+  // Add New Product
+  const handleAddNewProductSubmit = (e) => {
+    e.preventDefault();
+    if (!newProductForm.name.trim()) {
+      showToast('Product title is required', 'error');
+      return;
+    }
+
+    const newId = `ssc-item-${Date.now()}`;
+    let itemToInsert = {
+      id: newId,
+      name: newProductForm.name.trim(),
+      category: newProductForm.category,
+      description: newProductForm.description.trim() || 'Delicious freshly prepared item.',
+      image: newProductForm.image.trim() || 'https://images.unsplash.com/photo-1541696432-82c6da8ce7bf?auto=format&fit=crop&w=600&q=80',
+      available: newProductForm.available,
+      hasSizes: newProductForm.hasSizes
+    };
+
+    if (newProductForm.hasSizes) {
+      itemToInsert.sizes = {
+        Small: Number(newProductForm.smallPrice) || 50,
+        Medium: Number(newProductForm.medPrice) || 100,
+        Large: Number(newProductForm.largePrice) || 150
+      };
+      setPizzaSizes((prev) => ({ ...prev, [newId]: 'Small' }));
+    } else {
+      itemToInsert.price = newProductForm.price ? Number(newProductForm.price) : null;
+      if (itemToInsert.price === null) {
+        itemToInsert.priceNote = 'Price Coming Soon';
       }
+    }
 
-      filtered.forEach(item => {
-        const qty = cart[item.id] ? cart[item.id].qty : 0;
-        const card = document.createElement("div");
-        card.className = "bg-stone-900 border border-stone-800 rounded-2xl p-4 flex flex-col justify-between hover:border-amber-500/50 transition-all duration-200 group";
-        
-        card.innerHTML = `
-          <div>
-            <div class="flex items-start justify-between gap-2 mb-1.5">
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/30">
-                ${item.tag}
-              </span>
-              <span class="text-xs text-stone-500 capitalize">${item.category}</span>
+    setMenuItems((prev) => [itemToInsert, ...prev]);
+    setIsAddProductModalOpen(false);
+    showToast(`Added "${newProductForm.name}" to menu!`);
+    setNewProductForm({
+      name: '',
+      category: 'Snacks',
+      description: '',
+      price: '',
+      image: 'https://images.unsplash.com/photo-1541696432-82c6da8ce7bf?auto=format&fit=crop&w=600&q=80',
+      available: true,
+      hasSizes: false,
+      smallPrice: '',
+      medPrice: '',
+      largePrice: ''
+    });
+  };
+
+  // Edit Existing Product Submit
+  const handleEditProductSubmit = (e) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+
+    setMenuItems((prev) =>
+      prev.map((item) => {
+        if (item.id === editingProduct.id) {
+          return {
+            ...item,
+            name: editingProduct.name,
+            category: editingProduct.category,
+            description: editingProduct.description,
+            image: editingProduct.image,
+            price: editingProduct.price !== '' ? Number(editingProduct.price) : null,
+            available: editingProduct.available,
+            sizes: editingProduct.hasSizes ? editingProduct.sizes : item.sizes
+          };
+        }
+        return item;
+      })
+    );
+
+    showToast(`Updated "${editingProduct.name}" details!`);
+    setEditingProduct(null);
+  };
+
+  // Delete Product
+  const handleDeleteProduct = (itemId, name) => {
+    if (window.confirm(`Are you sure you want to delete "${name}" from the menu?`)) {
+      setMenuItems((prev) => prev.filter((it) => it.id !== itemId));
+      showToast(`Deleted ${name} from menu.`);
+    }
+  };
+
+  // Filtered menu items for customer view
+  const displayedMenuItems = useMemo(() => {
+    return menuItems.filter((item) => {
+      const matchesCategory =
+        selectedCategory === 'All' || item.category === selectedCategory;
+      const matchesSearch =
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [menuItems, selectedCategory, searchQuery]);
+
+  return (
+    <div className="min-h-screen bg-[#fffaf0] text-[#24140e] flex flex-col font-sans selection:bg-[#f39c12] selection:text-white pb-20 md:pb-0">
+      {/* Toast Alert Banner */}
+      {toastMessage && (
+        <div
+          className={`fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-2xl shadow-xl text-white font-medium text-xs sm:text-sm animate-fade-in transition-all ${
+            toastMessage.type === 'error'
+              ? 'bg-red-600'
+              : toastMessage.type === 'info'
+              ? 'bg-sky-600'
+              : 'bg-emerald-600'
+          }`}
+        >
+          {toastMessage.type === 'error' ? (
+            <AlertCircle className="w-4 h-4" />
+          ) : (
+            <CheckCircle className="w-4 h-4" />
+          )}
+          <span>{toastMessage.msg}</span>
+        </div>
+      )}
+
+      {/* Top Banner Alert / Notice */}
+      <div className="bg-[#1c100b] text-[#fef7ed] text-xs sm:text-sm py-1.5 px-4 text-center border-b border-[#3d2417] flex items-center justify-center gap-2">
+        <span
+          className={`inline-block w-2.5 h-2.5 rounded-full ${
+            restaurantSettings.isOpen ? 'bg-emerald-400 animate-pulse' : 'bg-red-500'
+          }`}
+        ></span>
+        <span className="font-medium">{restaurantSettings.address}</span>
+        <span className="hidden md:inline text-amber-300 font-semibold">
+          • Call / WhatsApp: {restaurantSettings.phone}
+        </span>
+        <span className="hidden sm:inline-block ml-2 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300">
+          Delivery: ₹{deliveryFee}
+        </span>
+      </div>
+
+      {/* Main Header */}
+      <header className="sticky top-0 z-40 bg-[#24140e]/95 backdrop-blur-md text-white border-b border-[#3d2417] shadow-lg transition-all">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+          {/* Logo & Brand */}
+          <div
+            onClick={() => setActiveTab('home')}
+            className="flex items-center gap-3 cursor-pointer group"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#f39c12] to-[#d35400] flex items-center justify-center shadow-md shadow-amber-950/40 group-hover:scale-105 transition-transform">
+              <Coffee className="w-7 h-7 text-white" />
             </div>
-            <h4 class="text-base font-bold text-white group-hover:text-amber-400 transition">${item.name}</h4>
-            <p class="text-xs text-stone-400 mt-1 line-clamp-2 leading-relaxed">${item.desc}</p>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-1.5">
+                Shri Shyam Cafe
+              </h1>
+              <p className="text-[11px] text-amber-200/90 font-medium tracking-wide">
+                Fresh Fast Food & Delicious Coffee
+              </p>
+            </div>
           </div>
 
-          <div class="flex items-center justify-between mt-4 pt-3 border-t border-stone-800/80">
-            <span class="text-lg font-extrabold text-amber-500">₹${item.price}</span>
-            
-            <div id="btn-container-${item.id}">
-              ${qty === 0 ? `
-                <button onclick="addToCart(${item.id})" class="px-3.5 py-1.5 bg-stone-800 hover:bg-amber-500 hover:text-black text-amber-400 border border-amber-500/30 rounded-xl text-xs font-bold transition flex items-center gap-1">
-                  <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add
-                </button>
-              ` : `
-                <div class="flex items-center gap-2 bg-stone-800 rounded-xl border border-stone-700 px-2 py-1">
-                  <button onclick="updateQty(${item.id}, -1)" class="text-stone-400 hover:text-white font-black text-xs px-1">−</button>
-                  <span class="text-xs font-bold text-amber-400 px-1">${qty}</span>
-                  <button onclick="updateQty(${item.id}, 1)" class="text-stone-400 hover:text-white font-black text-xs px-1">+</button>
+          {/* Desktop Nav */}
+          <nav className="hidden lg:flex items-center gap-7 text-sm font-semibold tracking-wide">
+            <button
+              onClick={() => setActiveTab('home')}
+              className={`hover:text-amber-400 transition-colors ${
+                activeTab === 'home' ? 'text-amber-400 border-b-2 border-amber-400 pb-1' : 'text-neutral-200'
+              }`}
+            >
+              Home
+            </button>
+            <button
+              onClick={() => setActiveTab('menu')}
+              className={`hover:text-amber-400 transition-colors ${
+                activeTab === 'menu' ? 'text-amber-400 border-b-2 border-amber-400 pb-1' : 'text-neutral-200'
+              }`}
+            >
+              Food Menu
+            </button>
+            <button
+              onClick={() => setActiveTab('menu')}
+              className="text-neutral-200 hover:text-amber-400 transition-colors"
+            >
+              Order Online
+            </button>
+            <button
+              onClick={() => setActiveTab('booking')}
+              className={`hover:text-amber-400 transition-colors ${
+                activeTab === 'booking' ? 'text-amber-400 border-b-2 border-amber-400 pb-1' : 'text-neutral-200'
+              }`}
+            >
+              Table Booking
+            </button>
+            <button
+              onClick={() => setActiveTab('contact')}
+              className={`hover:text-amber-400 transition-colors ${
+                activeTab === 'contact' ? 'text-amber-400 border-b-2 border-amber-400 pb-1' : 'text-neutral-200'
+              }`}
+            >
+              Contact Us
+            </button>
+            <button
+              onClick={() => setActiveTab('admin')}
+              className={`flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-full transition-all border ${
+                activeTab === 'admin'
+                  ? 'bg-amber-500 text-neutral-950 font-bold border-amber-400 shadow-md'
+                  : 'bg-[#3d2417] text-amber-200 border-amber-900/60 hover:bg-amber-600 hover:text-white'
+              }`}
+            >
+              <Lock className="w-3.5 h-3.5" />
+              Owner Admin
+            </button>
+          </nav>
+
+          {/* Header Action Buttons */}
+          <div className="flex items-center gap-2.5 sm:gap-4">
+            {/* Direct WhatsApp Quick Order */}
+            <a
+              href={`https://wa.me/917485869591?text=${encodeURIComponent(
+                "Hello Shri Shyam Cafe, I would like to place an order / know today's specials!"
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden sm:inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs sm:text-sm px-3.5 py-2 rounded-xl shadow-md transition-all active:scale-95"
+            >
+              <MessageCircle className="w-4 h-4 fill-white" />
+              WhatsApp
+            </a>
+
+            {/* Cart Button */}
+            <button
+              onClick={() => setCartDrawerOpen(true)}
+              className="relative p-2.5 bg-[#3d2417] hover:bg-[#4d3020] text-amber-300 rounded-xl transition-transform active:scale-90 border border-amber-900/40"
+              aria-label="View shopping cart"
+            >
+              <ShoppingBag className="w-5 h-5" />
+              {totalCartCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[11px] font-bold h-5 w-5 rounded-full flex items-center justify-center ring-2 ring-[#24140e] animate-bounce">
+                  {totalCartCount}
+                </span>
+              )}
+            </button>
+
+            {/* Mobile Hamburger toggle */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 text-white hover:text-amber-400"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Dropdown Nav Menu */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden bg-[#1c100b] border-t border-[#3d2417] px-5 py-4 space-y-3">
+            <button
+              onClick={() => {
+                setActiveTab('home');
+                setMobileMenuOpen(false);
+              }}
+              className="block w-full text-left py-2 text-white font-medium hover:text-amber-400"
+            >
+              Home
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('menu');
+                setMobileMenuOpen(false);
+              }}
+              className="block w-full text-left py-2 text-white font-medium hover:text-amber-400"
+            >
+              Food Menu & Order Online
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('booking');
+                setMobileMenuOpen(false);
+              }}
+              className="block w-full text-left py-2 text-white font-medium hover:text-amber-400"
+            >
+              Table Booking
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('contact');
+                setMobileMenuOpen(false);
+              }}
+              className="block w-full text-left py-2 text-white font-medium hover:text-amber-400"
+            >
+              Contact & Location
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('admin');
+                setMobileMenuOpen(false);
+              }}
+              className="block w-full text-left py-2 text-amber-300 font-bold hover:text-white"
+            >
+              Owner Admin Dashboard
+            </button>
+            <a
+              href={`tel:${restaurantSettings.phone}`}
+              className="flex items-center gap-2 py-2 text-emerald-400 font-semibold"
+            >
+              <Phone className="w-4 h-4" /> Call: {restaurantSettings.phone}
+            </a>
+          </div>
+        )}
+      </header>
+
+      {/* Main Content Area */}
+      <main className="flex-1">
+        {/* HOMEPAGE VIEW */}
+        {activeTab === 'home' && (
+          <>
+            {/* HERO SECTION */}
+            <section className="relative bg-gradient-to-br from-[#24140e] via-[#331c12] to-[#1a0e08] text-white overflow-hidden py-14 sm:py-20 lg:py-28">
+              <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#f39c12_1px,transparent_1px)] [background-size:16px_16px]"></div>
+              
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                {/* Hero Left Content */}
+                <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
+                  {/* Delivery Badge with Dynamic Delivery Fee */}
+                  <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-400/40 rounded-full px-4 py-1.5 text-xs sm:text-sm text-amber-300 font-semibold backdrop-blur-sm">
+                    <Truck className="w-4 h-4 text-amber-400" />
+                    <span>Home Delivery Available – ₹{deliveryFee} Delivery Charge Extra</span>
+                  </div>
+
+                  <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight">
+                    Welcome to <br />
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-orange-400 to-amber-200">
+                      Shri Shyam Cafe
+                    </span>
+                  </h1>
+
+                  <p className="text-lg sm:text-xl text-neutral-300 font-medium max-w-2xl mx-auto lg:mx-0">
+                    Delicious Food, Freshly Prepared, Served with Love!
+                  </p>
+
+                  {/* Location Tag */}
+                  <div className="flex items-center justify-center lg:justify-start gap-2 text-sm text-amber-200/90 bg-[#3a2014]/60 px-4 py-2 rounded-xl border border-amber-900/50 max-w-fit mx-auto lg:mx-0">
+                    <MapPin className="w-4 h-4 text-orange-400 flex-shrink-0" />
+                    <span>{restaurantSettings.address}</span>
+                  </div>
+
+                  {/* CTA Buttons */}
+                  <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-4">
+                    <button
+                      onClick={() => setActiveTab('menu')}
+                      className="px-7 py-3.5 bg-gradient-to-r from-[#e58e26] to-[#f39c12] hover:from-[#d35400] hover:to-[#e58e26] text-white font-bold rounded-2xl shadow-xl shadow-amber-950/50 flex items-center gap-2 transform hover:-translate-y-0.5 transition-all"
+                    >
+                      <ShoppingBag className="w-5 h-5" />
+                      Order Now
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('booking')}
+                      className="px-6 py-3.5 bg-neutral-900/80 hover:bg-neutral-800 text-neutral-100 font-semibold rounded-2xl border border-neutral-700 backdrop-blur-md flex items-center gap-2 transition-all"
+                    >
+                      <Calendar className="w-5 h-5 text-amber-400" />
+                      Book a Table
+                    </button>
+                    <a
+                      href={`tel:${restaurantSettings.phone}`}
+                      className="px-5 py-3.5 bg-emerald-600/30 hover:bg-emerald-600/40 text-emerald-300 font-medium rounded-2xl border border-emerald-500/30 flex items-center gap-2 transition-all"
+                    >
+                      <Phone className="w-4 h-4 text-emerald-400" />
+                      Call Us
+                    </a>
+                  </div>
                 </div>
-              `}
+
+                {/* Hero Right Visual Banner */}
+                <div className="lg:col-span-5 relative">
+                  <div className="relative mx-auto max-w-md lg:max-w-none">
+                    <div className="absolute -inset-2 bg-gradient-to-tr from-amber-500/40 to-orange-600/40 rounded-3xl blur-2xl transform -rotate-3"></div>
+                    <div className="relative rounded-3xl overflow-hidden border-2 border-amber-600/40 shadow-2xl bg-[#24140e]">
+                      <img
+                        src="https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80"
+                        alt="Delicious Cafe Food"
+                        className="w-full h-80 sm:h-96 object-cover hover:scale-105 transition-transform duration-700"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-6">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="bg-amber-500 text-black text-xs font-black px-2 py-0.5 rounded">
+                            HOT & FRESH
+                          </span>
+                          <span className="text-xs text-neutral-300 font-medium">Pizza, Burger, Coffee & Momos</span>
+                        </div>
+                        <p className="text-white font-bold text-lg">Crispy Cheese Crusts & Chilled Shakes</p>
+                      </div>
+                    </div>
+
+                    <div className="absolute -bottom-4 -left-4 bg-[#1c100b] border border-amber-500/50 text-white p-3.5 rounded-2xl shadow-xl flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+                        ₹10
+                      </div>
+                      <div>
+                        <div className="text-xs text-neutral-400">Desi Chai Starts At</div>
+                        <div className="text-sm font-bold text-amber-300">Special Desi Kadak Chai</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* FEATURED FOOD SECTION */}
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+              <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
+                <div>
+                  <div className="flex items-center gap-2 text-amber-700 font-bold text-xs uppercase tracking-wider mb-2">
+                    <Sparkles className="w-4 h-4" /> Customer Favorites
+                  </div>
+                  <h2 className="text-3xl sm:text-4xl font-extrabold text-[#24140e]">
+                    Featured Delicacies
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setActiveTab('menu')}
+                  className="mt-4 md:mt-0 inline-flex items-center gap-1.5 text-amber-700 hover:text-amber-800 font-bold text-sm group"
+                >
+                  View Full Menu <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+
+              {/* Featured items */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                {menuItems
+                  .filter((item) =>
+                    ['pz-1', 'bg-1', 'bg-2', 'sn-3', 'sw-1', 'tc-2'].includes(item.id)
+                  )
+                  .map((item) => (
+                    <div
+                      key={item.id}
+                      className="bg-white rounded-3xl overflow-hidden border border-amber-900/10 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
+                    >
+                      <div>
+                        <div className="relative h-48 overflow-hidden bg-neutral-100">
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                          <div className="absolute top-3 left-3 flex gap-1.5">
+                            <span className="bg-[#24140e]/80 backdrop-blur-sm text-amber-300 text-xs font-semibold px-2.5 py-1 rounded-full">
+                              {item.category}
+                            </span>
+                            {!item.available && (
+                              <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                Out of Stock
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="p-5">
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <h3 className="text-lg font-bold text-[#24140e] group-hover:text-amber-700 transition-colors">
+                              {item.name}
+                            </h3>
+                            <div className="text-right">
+                              {item.hasSizes ? (
+                                <span className="text-sm font-bold text-amber-700">
+                                  From ₹{item.sizes.Small}
+                                </span>
+                              ) : (
+                                <span className="text-lg font-extrabold text-amber-700">
+                                  ₹{item.price}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <p className="text-xs text-neutral-600 line-clamp-2 mb-4 leading-relaxed">
+                            {item.description}
+                          </p>
+
+                          {/* Pizza size picker */}
+                          {item.hasSizes && (
+                            <div className="mb-4">
+                              <label className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider block mb-1.5">
+                                Select Size:
+                              </label>
+                              <div className="grid grid-cols-3 gap-1.5">
+                                {['Small', 'Medium', 'Large'].map((sz) => (
+                                  <button
+                                    key={sz}
+                                    type="button"
+                                    onClick={() =>
+                                      setPizzaSizes((prev) => ({ ...prev, [item.id]: sz }))
+                                    }
+                                    className={`py-1 text-xs font-semibold rounded-lg border transition-all ${
+                                      (pizzaSizes[item.id] || 'Small') === sz
+                                        ? 'bg-[#24140e] text-amber-300 border-[#24140e]'
+                                        : 'bg-neutral-50 text-neutral-700 border-neutral-200 hover:bg-neutral-100'
+                                    }`}
+                                  >
+                                    {sz} - ₹{item.sizes[sz]}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="p-5 pt-0">
+                        <button
+                          onClick={() => handleAddToCart(item)}
+                          disabled={!item.available}
+                          className={`w-full py-2.5 px-4 font-bold rounded-xl shadow transition-all flex items-center justify-center gap-2 active:scale-95 text-sm ${
+                            item.available
+                              ? 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white'
+                              : 'bg-neutral-200 text-neutral-500 cursor-not-allowed shadow-none'
+                          }`}
+                        >
+                          <Plus className="w-4 h-4" />
+                          {item.available ? 'Add to Cart' : 'Out of Stock'}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </section>
+          </>
+        )}
+
+        {/* FOOD MENU SECTION */}
+        {activeTab === 'menu' && (
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+            <div className="text-center max-w-2xl mx-auto mb-8">
+              <span className="text-amber-700 font-bold text-xs uppercase tracking-widest">
+                Fresh & Hot Everyday
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-black text-[#24140e] mt-1 mb-3">
+                Shri Shyam Cafe Food Menu
+              </h2>
+              <p className="text-sm text-neutral-600">
+                Explore our full menu. Size options are available for pizzas. Select size and click Add to Cart to order!
+              </p>
+            </div>
+
+            {/* Search & Categories */}
+            <div className="mb-8 space-y-4">
+              <div className="relative max-w-md mx-auto">
+                <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
+                <input
+                  type="text"
+                  placeholder="Search momos, pizza, cold coffee, burger..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-11 pr-4 py-3 bg-white border border-neutral-300 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-sm"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-neutral-400 hover:text-neutral-700"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none justify-start md:justify-center">
+                {CATEGORIES.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`whitespace-nowrap px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+                      selectedCategory === cat
+                        ? 'bg-[#24140e] text-amber-300 shadow-md shadow-amber-950/20'
+                        : 'bg-white text-neutral-700 hover:bg-neutral-100 border border-neutral-200'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Menu Grid */}
+            {displayedMenuItems.length === 0 ? (
+              <div className="text-center py-16 bg-white rounded-3xl border border-dashed border-neutral-300 p-8">
+                <Coffee className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
+                <h3 className="text-lg font-bold text-neutral-700">No Food Items Found</h3>
+                <p className="text-xs text-neutral-500 mt-1">
+                  Try adjusting your search query or choosing another category.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                {displayedMenuItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className={`bg-white rounded-3xl overflow-hidden border border-amber-900/10 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between ${
+                      !item.available ? 'opacity-75' : ''
+                    }`}
+                  >
+                    <div>
+                      <div className="relative h-48 overflow-hidden bg-neutral-100">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                          <span className="bg-[#24140e]/80 backdrop-blur-sm text-amber-300 text-[11px] font-semibold px-2.5 py-1 rounded-full">
+                            {item.category}
+                          </span>
+                          {!item.available && (
+                            <span className="bg-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow">
+                              Out of Stock
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="p-5">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <h3 className="text-lg font-bold text-[#24140e]">{item.name}</h3>
+                          <div className="text-right flex-shrink-0">
+                            {item.hasSizes ? (
+                              <div className="text-sm font-bold text-amber-800">
+                                ₹{item.sizes[pizzaSizes[item.id] || 'Small']}
+                              </div>
+                            ) : item.price !== null ? (
+                              <div className="text-lg font-black text-amber-800">
+                                ₹{item.price}
+                              </div>
+                            ) : (
+                              <span className="text-xs font-semibold px-2 py-1 bg-amber-100 text-amber-800 rounded-md">
+                                {item.priceNote || 'Price Coming Soon'}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <p className="text-xs text-neutral-600 leading-relaxed mb-4">
+                          {item.description}
+                        </p>
+
+                        {/* Pizza Size Selector */}
+                        {item.hasSizes && (
+                          <div className="mb-4 bg-amber-50/60 p-2.5 rounded-2xl border border-amber-200/50">
+                            <span className="text-[11px] font-bold text-amber-900 block mb-1.5">
+                              Choose Pizza Size (Required):
+                            </span>
+                            <div className="grid grid-cols-3 gap-1.5">
+                              {['Small', 'Medium', 'Large'].map((sz) => (
+                                <button
+                                  key={sz}
+                                  type="button"
+                                  onClick={() =>
+                                    setPizzaSizes((prev) => ({ ...prev, [item.id]: sz }))
+                                  }
+                                  className={`py-1 text-xs font-bold rounded-xl transition-all ${
+                                    (pizzaSizes[item.id] || 'Small') === sz
+                                      ? 'bg-[#24140e] text-amber-300 shadow-sm'
+                                      : 'bg-white text-neutral-700 border border-neutral-200 hover:bg-neutral-50'
+                                  }`}
+                                >
+                                  {sz}
+                                  <span className="block text-[10px] font-normal text-amber-500">
+                                    ₹{item.sizes[sz]}
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="p-5 pt-0">
+                      <button
+                        onClick={() => handleAddToCart(item)}
+                        disabled={!item.available}
+                        className={`w-full py-2.5 px-4 font-bold rounded-2xl shadow-sm transition-all flex items-center justify-center gap-2 active:scale-95 text-sm ${
+                          item.available
+                            ? 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white'
+                            : 'bg-neutral-200 text-neutral-400 cursor-not-allowed shadow-none'
+                        }`}
+                      >
+                        <ShoppingBag className="w-4 h-4" />
+                        {item.available ? 'Add to Cart' : 'Currently Unavailable'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* TABLE BOOKING SECTION */}
+        {activeTab === 'booking' && (
+          <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="bg-white rounded-3xl border border-amber-900/10 shadow-xl overflow-hidden">
+              <div className="bg-[#24140e] text-white p-6 sm:p-10 text-center relative">
+                <div className="inline-flex p-3 bg-amber-500/20 text-amber-400 rounded-2xl mb-3">
+                  <Calendar className="w-8 h-8" />
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-extrabold">Reserve a Cafe Table</h2>
+                <p className="text-sm text-neutral-300 max-w-md mx-auto mt-2">
+                  Plan your family get-together, birthday party, or snack session at Shri Shyam Cafe.
+                </p>
+                <div className="mt-4 text-xs text-amber-300/80 font-medium">
+                  * Note: Table reservations are requests until confirmed via WhatsApp.
+                </div>
+              </div>
+
+              <form onSubmit={handleBookingSubmit} className="p-6 sm:p-10 space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-2">
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Ramesh Kumar"
+                      value={bookingForm.name}
+                      onChange={(e) => setBookingForm({ ...bookingForm, name: e.target.value })}
+                      className="w-full px-4 py-3 bg-neutral-50 border border-neutral-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-2">
+                      Mobile Number (WhatsApp) *
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      placeholder="e.g. 9876543210"
+                      value={bookingForm.phone}
+                      onChange={(e) => setBookingForm({ ...bookingForm, phone: e.target.value })}
+                      className="w-full px-4 py-3 bg-neutral-50 border border-neutral-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-2">
+                      Reservation Date *
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      value={bookingForm.date}
+                      onChange={(e) => setBookingForm({ ...bookingForm, date: e.target.value })}
+                      className="w-full px-4 py-3 bg-neutral-50 border border-neutral-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-2">
+                      Preferred Time *
+                    </label>
+                    <input
+                      type="time"
+                      required
+                      value={bookingForm.time}
+                      onChange={(e) => setBookingForm({ ...bookingForm, time: e.target.value })}
+                      className="w-full px-4 py-3 bg-neutral-50 border border-neutral-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-2">
+                      Number of Guests *
+                    </label>
+                    <select
+                      value={bookingForm.guests}
+                      onChange={(e) => setBookingForm({ ...bookingForm, guests: e.target.value })}
+                      className="w-full px-4 py-3 bg-neutral-50 border border-neutral-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    >
+                      <option value="1">1 Person</option>
+                      <option value="2">2 Guests (Couple)</option>
+                      <option value="3">3 Guests</option>
+                      <option value="4">4 Guests</option>
+                      <option value="5-8">5 to 8 Guests (Group)</option>
+                      <option value="8+">8+ Guests (Party)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-2">
+                      Special Requests / Occasion
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Birthday celebration, Quiet corner"
+                      value={bookingForm.request}
+                      onChange={(e) => setBookingForm({ ...bookingForm, request: e.target.value })}
+                      className="w-full px-4 py-3 bg-neutral-50 border border-neutral-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-4">
+                  <button
+                    type="submit"
+                    className="w-full py-4 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-bold rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 text-base"
+                  >
+                    <Calendar className="w-5 h-5" />
+                    Book Table & Request on WhatsApp
+                  </button>
+                </div>
+              </form>
+            </div>
+          </section>
+        )}
+
+        {/* CONTACT SECTION */}
+        {activeTab === 'contact' && (
+          <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="text-center max-w-xl mx-auto mb-10">
+              <span className="text-amber-700 font-bold text-xs uppercase tracking-widest">
+                Get In Touch
+              </span>
+              <h2 className="text-3xl font-black text-[#24140e] mt-1">Visit or Contact Us</h2>
+              <p className="text-xs sm:text-sm text-neutral-600 mt-2">
+                Located right opposite to Navin Hospital in Babhar Kalagram, Bihar!
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+              <div className="bg-white p-8 rounded-3xl border border-amber-900/10 shadow-lg space-y-6">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-amber-100 text-amber-800 rounded-2xl">
+                    <MapPin className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-neutral-900">Cafe Address</h3>
+                    <p className="text-sm text-neutral-700 font-medium mt-1">Shri Shyam Cafe</p>
+                    <p className="text-sm text-neutral-600">{restaurantSettings.address}</p>
+                    <p className="text-xs text-neutral-500 mt-1">Bihar - 811213, India</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-emerald-100 text-emerald-800 rounded-2xl">
+                    <Phone className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-neutral-900">Phone & WhatsApp</h3>
+                    <p className="text-sm text-neutral-700 font-medium mt-1">{restaurantSettings.phone}</p>
+                    <div className="flex gap-2 mt-2">
+                      <a
+                        href={`tel:${restaurantSettings.phone}`}
+                        className="px-3.5 py-1.5 bg-neutral-900 text-white rounded-xl text-xs font-semibold hover:bg-neutral-800"
+                      >
+                        Call Now
+                      </a>
+                      <a
+                        href={`https://wa.me/917485869591`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-semibold hover:bg-emerald-500 flex items-center gap-1"
+                      >
+                        <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-amber-100 text-amber-800 rounded-2xl">
+                    <Clock className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-neutral-900">Opening Hours</h3>
+                    <p className="text-sm text-neutral-600 mt-1">{restaurantSettings.hours}</p>
+                    <span className="inline-block mt-2 px-2.5 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-md">
+                      Open Every Day
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-indigo-100 text-indigo-800 rounded-2xl">
+                    <QrCode className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-neutral-900">Official UPI ID</h3>
+                    <code className="text-xs bg-neutral-100 px-2 py-1 rounded text-indigo-700 font-mono font-bold">
+                      {restaurantSettings.upiId}
+                    </code>
+                  </div>
+                </div>
+              </div>
+
+              {/* Map & Directions Preview Card */}
+              <div className="bg-white p-6 rounded-3xl border border-amber-900/10 shadow-lg flex flex-col justify-between h-full">
+                <div>
+                  <h3 className="font-bold text-lg text-neutral-900 mb-2">Location Map</h3>
+                  <p className="text-xs text-neutral-600 mb-4">
+                    Located on main road directly opposite to Navin Hospital, Babhar Kalagram.
+                  </p>
+                  
+                  <div className="w-full h-64 rounded-2xl bg-neutral-100 border border-neutral-200 overflow-hidden relative flex flex-col items-center justify-center p-6 text-center">
+                    <div className="w-14 h-14 rounded-full bg-amber-500/20 text-amber-700 flex items-center justify-center mb-3">
+                      <MapPin className="w-8 h-8" />
+                    </div>
+                    <div className="font-bold text-sm text-[#24140e]">
+                      Shri Shyam Cafe (नवीन अस्पताल के सामने)
+                    </div>
+                    <div className="text-xs text-neutral-500 mt-1 max-w-xs">
+                      बम्बर कलाग्राम, Bihar 811213
+                    </div>
+
+                    <a
+                      href="https://www.google.com/maps/search/?api=1&query=Shri+Shyam+Cafe+Bambar+Kalagram+Bihar"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-4 px-4 py-2 bg-[#24140e] text-amber-300 text-xs font-bold rounded-xl hover:bg-neutral-800 flex items-center gap-1.5 shadow"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      Open Google Maps Location
+                    </a>
+                  </div>
+                </div>
+
+                <div className="mt-6 p-4 bg-amber-50 rounded-2xl border border-amber-200/60 text-xs text-amber-900">
+                  <strong>Need assistance finding us?</strong> Feel free to call us at{' '}
+                  <span className="font-bold">{restaurantSettings.phone}</span>.
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* OWNER ADMIN DASHBOARD */}
+        {activeTab === 'admin' && (
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+            {!isAdminAuthenticated ? (
+              /* Admin Authentication Login Screen */
+              <div className="max-w-md mx-auto bg-white p-8 rounded-3xl border border-amber-900/10 shadow-2xl text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-amber-950/20">
+                  <Lock className="w-8 h-8" />
+                </div>
+                <h2 className="text-2xl font-black text-[#24140e]">Owner Admin Login</h2>
+                <p className="text-xs text-neutral-500 mt-1 mb-6">
+                  Enter your cafe owner PIN/Password to access the live menu price adjuster, delivery rates, and store settings.
+                </p>
+
+                <form onSubmit={handleAdminLogin} className="space-y-4">
+                  <div>
+                    <input
+                      type="password"
+                      placeholder="Enter Admin Password (Default: 1234)"
+                      value={adminPinInput}
+                      onChange={(e) => setAdminPinInput(e.target.value)}
+                      className="w-full text-center tracking-widest text-lg font-bold px-4 py-3.5 bg-neutral-50 border border-neutral-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+
+                  {adminAuthError && (
+                    <div className="text-xs text-red-600 font-semibold bg-red-50 p-2.5 rounded-xl border border-red-200">
+                      {adminAuthError}
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    className="w-full py-3.5 bg-[#24140e] hover:bg-neutral-800 text-amber-300 font-bold rounded-2xl transition-all shadow-md"
+                  >
+                    Unlock Owner Dashboard
+                  </button>
+                  <p className="text-[11px] text-neutral-400">Default Password/PIN: <span className="font-mono font-bold text-neutral-600">1234</span></p>
+                </form>
+              </div>
+            ) : (
+              /* Authenticated Admin Dashboard Workspace */
+              <div className="space-y-6">
+                {/* Admin Top Banner Bar */}
+                <div className="bg-[#24140e] text-white p-6 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl border border-amber-950/40">
+                  <div className="flex items-center gap-3.5">
+                    <div className="p-3 bg-amber-500/20 text-amber-400 rounded-2xl border border-amber-500/30">
+                      <Store className="w-7 h-7" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold flex items-center gap-2">
+                        Owner Admin Dashboard
+                        <span className="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-mono border border-amber-500/30">
+                          Live Control
+                        </span>
+                      </h2>
+                      <p className="text-xs text-amber-200/80">
+                        Shri Shyam Cafe • Babhar Kalagram, Bihar 811213
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3">
+                    {/* Add Product Button */}
+                    <button
+                      onClick={() => setIsAddProductModalOpen(true)}
+                      className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-xs rounded-xl shadow flex items-center gap-1.5 transition-all"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add New Product
+                    </button>
+
+                    {/* Store Open/Close Toggle */}
+                    <button
+                      onClick={() => {
+                        const updated = !restaurantSettings.isOpen;
+                        setRestaurantSettings({ ...restaurantSettings, isOpen: updated });
+                        showToast(`Store marked as ${updated ? 'OPEN' : 'CLOSED'}`);
+                      }}
+                      className={`px-3 py-2 rounded-xl text-xs font-bold transition-colors ${
+                        restaurantSettings.isOpen ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
+                      }`}
+                    >
+                      Store: {restaurantSettings.isOpen ? 'OPEN' : 'CLOSED'}
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setIsAdminAuthenticated(false);
+                        showToast('Logged out of Admin Portal');
+                      }}
+                      className="px-3 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-xs font-semibold rounded-xl border border-neutral-700"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+
+                {/* Sub-Navigation Tabs */}
+                <div className="flex items-center gap-2 border-b border-neutral-200 pb-2 overflow-x-auto">
+                  <button
+                    onClick={() => setAdminSubTab('menu-adjuster')}
+                    className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all ${
+                      adminSubTab === 'menu-adjuster'
+                        ? 'bg-[#24140e] text-amber-300 shadow-md'
+                        : 'bg-white text-neutral-600 hover:bg-neutral-100 border border-neutral-200'
+                    }`}
+                  >
+                    <Edit2 className="w-4 h-4" />
+                    Live Menu & Price Adjuster
+                  </button>
+
+                  <button
+                    onClick={() => setAdminSubTab('settings')}
+                    className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all ${
+                      adminSubTab === 'settings'
+                        ? 'bg-[#24140e] text-amber-300 shadow-md'
+                        : 'bg-white text-neutral-600 hover:bg-neutral-100 border border-neutral-200'
+                    }`}
+                  >
+                    <Settings className="w-4 h-4" />
+                    Delivery & Password Settings
+                  </button>
+
+                  <button
+                    onClick={() => setAdminSubTab('orders')}
+                    className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all ${
+                      adminSubTab === 'orders'
+                        ? 'bg-[#24140e] text-amber-300 shadow-md'
+                        : 'bg-white text-neutral-600 hover:bg-neutral-100 border border-neutral-200'
+                    }`}
+                  >
+                    <ShoppingBag className="w-4 h-4" />
+                    Orders ({ordersList.length})
+                  </button>
+
+                  <button
+                    onClick={() => setAdminSubTab('bookings')}
+                    className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all ${
+                      adminSubTab === 'bookings'
+                        ? 'bg-[#24140e] text-amber-300 shadow-md'
+                        : 'bg-white text-neutral-600 hover:bg-neutral-100 border border-neutral-200'
+                    }`}
+                  >
+                    <Calendar className="w-4 h-4" />
+                    Table Bookings ({bookingsList.length})
+                  </button>
+                </div>
+
+                {/* 1. LIVE MENU ITEMS & PRICE ADJUSTER (MATCHING USER SCREENSHOT) */}
+                {adminSubTab === 'menu-adjuster' && (
+                  <div className="bg-white rounded-3xl border border-neutral-200 shadow-lg p-6 sm:p-8 space-y-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-100 pb-5">
+                      <div>
+                        <h3 className="text-xl font-bold text-neutral-900 tracking-tight">
+                          Live Menu Items & Price Adjuster
+                        </h3>
+                        <p className="text-xs text-neutral-500 mt-1">
+                          Change prices, toggle out-of-stock items in real-time. Changes immediately reflect for all customers.
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setIsAddProductModalOpen(true)}
+                          className="px-4 py-2 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold text-xs rounded-xl shadow-sm hover:from-amber-700 hover:to-orange-700 flex items-center gap-1.5"
+                        >
+                          <Plus className="w-4 h-4" />
+                          Add Product
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Exact Screenshot 2-Column Responsive Card Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {menuItems.map((item) => (
+                        <div
+                          key={item.id}
+                          className="p-3.5 bg-white border border-neutral-200/80 rounded-2xl shadow-sm hover:shadow-md transition-all flex items-center justify-between gap-3 group"
+                        >
+                          {/* Item Left: Image Thumbnail & Details */}
+                          <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                            <div className="relative w-14 h-14 rounded-2xl overflow-hidden bg-neutral-100 flex-shrink-0 border border-neutral-200">
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+
+                            <div className="min-w-0 flex-1">
+                              <h4 className="text-sm font-bold text-neutral-900 truncate">
+                                {item.name}
+                              </h4>
+                              <p className="text-[11px] text-neutral-400 font-medium truncate">
+                                {item.category}
+                              </p>
+
+                              {/* Price display with inline click-to-edit or size summary */}
+                              <div className="flex items-center gap-2 mt-0.5">
+                                {item.hasSizes ? (
+                                  <div className="text-xs font-bold text-neutral-800 flex items-center gap-1.5">
+                                    <span className="text-[11px] text-neutral-500">S:₹{item.sizes.Small}</span>
+                                    <span className="text-[11px] text-neutral-500">M:₹{item.sizes.Medium}</span>
+                                    <span className="text-[11px] text-neutral-500">L:₹{item.sizes.Large}</span>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-sm font-black text-neutral-900">₹</span>
+                                    <input
+                                      type="number"
+                                      value={item.price === null ? '' : item.price}
+                                      placeholder="0"
+                                      onChange={(e) => handleQuickPriceChange(item.id, e.target.value)}
+                                      className="w-16 px-1.5 py-0.5 text-xs font-black text-neutral-900 bg-neutral-50 border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-amber-500"
+                                    />
+                                    {item.price === null && (
+                                      <span className="text-[10px] text-amber-600 font-semibold">(TBD)</span>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Item Right: Real-time Stock Toggle & Action Buttons */}
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            {/* "In Stock" / "Out of Stock" Pill Button (Matching Screenshot) */}
+                            <button
+                              type="button"
+                              onClick={() => handleToggleStock(item.id)}
+                              className={`px-3 py-1.5 rounded-full text-xs font-semibold tracking-tight transition-all active:scale-95 ${
+                                item.available
+                                  ? 'bg-[#d1fae5] text-[#065f46] hover:bg-[#a7f3d0] border border-[#a7f3d0]'
+                                  : 'bg-red-100 text-red-700 hover:bg-red-200 border border-red-200'
+                              }`}
+                            >
+                              {item.available ? 'In Stock' : 'Out of Stock'}
+                            </button>
+
+                            {/* Edit item details modal trigger */}
+                            <button
+                              type="button"
+                              onClick={() => setEditingProduct({ ...item })}
+                              className="p-1.5 text-neutral-400 hover:text-amber-700 hover:bg-neutral-100 rounded-lg transition-colors"
+                              title="Edit product info"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+
+                            {/* Delete product */}
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteProduct(item.id, item.name)}
+                              className="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Delete product"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. SETTINGS: PASSWORD CHANGE & STANDARD DELIVERY CHARGE EDIT */}
+                {adminSubTab === 'settings' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Standard Delivery Charge Editor */}
+                    <div className="bg-white rounded-3xl border border-neutral-200 shadow-lg p-6 space-y-4">
+                      <div className="flex items-center gap-3 border-b border-neutral-100 pb-3">
+                        <div className="p-2.5 bg-amber-100 text-amber-800 rounded-xl">
+                          <Truck className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-base text-neutral-900">Standard Delivery Charge</h4>
+                          <p className="text-xs text-neutral-500">Edit fixed delivery fee charged per order</p>
+                        </div>
+                      </div>
+
+                      <form onSubmit={handleUpdateDeliveryFee} className="space-y-4">
+                        <div>
+                          <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1.5">
+                            Standard Delivery Charge (₹)
+                          </label>
+                          <div className="relative">
+                            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-bold text-neutral-500 text-sm">
+                              ₹
+                            </span>
+                            <input
+                              type="number"
+                              required
+                              value={deliveryFeeInput}
+                              onChange={(e) => setDeliveryFeeInput(e.target.value)}
+                              className="w-full pl-8 pr-4 py-2.5 bg-neutral-50 border border-neutral-300 rounded-xl text-sm font-bold text-neutral-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                            />
+                          </div>
+                          <p className="text-[11px] text-neutral-400 mt-1.5">
+                            * Current live fee: <strong>₹{deliveryFee}</strong>. Applied once per home delivery order. Takeaway remains ₹0.
+                          </p>
+                        </div>
+
+                        <button
+                          type="submit"
+                          className="w-full py-2.5 bg-neutral-900 hover:bg-neutral-800 text-amber-300 font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition-all"
+                        >
+                          <Save className="w-4 h-4" />
+                          Update Delivery Charge
+                        </button>
+                      </form>
+                    </div>
+
+                    {/* Change Admin Password / PIN */}
+                    <div className="bg-white rounded-3xl border border-neutral-200 shadow-lg p-6 space-y-4">
+                      <div className="flex items-center gap-3 border-b border-neutral-100 pb-3">
+                        <div className="p-2.5 bg-indigo-100 text-indigo-800 rounded-xl">
+                          <KeyRound className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-base text-neutral-900">Change Admin Password</h4>
+                          <p className="text-xs text-neutral-500">Update the secure PIN used to log in</p>
+                        </div>
+                      </div>
+
+                      <form onSubmit={handleChangePassword} className="space-y-3">
+                        <div>
+                          <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                            Current Password *
+                          </label>
+                          <input
+                            type="password"
+                            required
+                            placeholder="Enter current password"
+                            value={currPasswordInput}
+                            onChange={(e) => setCurrPasswordInput(e.target.value)}
+                            className="w-full px-3.5 py-2 bg-neutral-50 border border-neutral-300 rounded-xl text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                            New Password *
+                          </label>
+                          <input
+                            type="password"
+                            required
+                            placeholder="Enter at least 4 characters"
+                            value={newPasswordInput}
+                            onChange={(e) => setNewPasswordInput(e.target.value)}
+                            className="w-full px-3.5 py-2 bg-neutral-50 border border-neutral-300 rounded-xl text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                            Confirm New Password *
+                          </label>
+                          <input
+                            type="password"
+                            required
+                            placeholder="Re-type new password"
+                            value={confirmPasswordInput}
+                            onChange={(e) => setConfirmPasswordInput(e.target.value)}
+                            className="w-full px-3.5 py-2 bg-neutral-50 border border-neutral-300 rounded-xl text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                          />
+                        </div>
+
+                        {passwordChangeError && (
+                          <div className="text-xs text-red-600 font-semibold bg-red-50 p-2 rounded-lg">
+                            {passwordChangeError}
+                          </div>
+                        )}
+
+                        {passwordChangeSuccess && (
+                          <div className="text-xs text-emerald-700 font-semibold bg-emerald-50 p-2 rounded-lg">
+                            {passwordChangeSuccess}
+                          </div>
+                        )}
+
+                        <button
+                          type="submit"
+                          className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition-all"
+                        >
+                          <KeyRound className="w-4 h-4" />
+                          Save New Password
+                        </button>
+                      </form>
+                    </div>
+
+                    {/* Cafe Contact Details & UPI Editor */}
+                    <div className="bg-white rounded-3xl border border-neutral-200 shadow-lg p-6 space-y-4 md:col-span-2">
+                      <div className="flex items-center gap-3 border-b border-neutral-100 pb-3">
+                        <div className="p-2.5 bg-amber-100 text-amber-800 rounded-xl">
+                          <Store className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-base text-neutral-900">Cafe Information & UPI ID</h4>
+                          <p className="text-xs text-neutral-500">Configure public contact details and payment destination</p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                            WhatsApp / Phone Number
+                          </label>
+                          <input
+                            type="text"
+                            value={restaurantSettings.phone}
+                            onChange={(e) =>
+                              setRestaurantSettings({ ...restaurantSettings, phone: e.target.value })
+                            }
+                            className="w-full px-3.5 py-2 bg-neutral-50 border border-neutral-300 rounded-xl text-xs"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                            Official Merchant UPI ID
+                          </label>
+                          <input
+                            type="text"
+                            value={restaurantSettings.upiId}
+                            onChange={(e) =>
+                              setRestaurantSettings({ ...restaurantSettings, upiId: e.target.value })
+                            }
+                            className="w-full px-3.5 py-2 bg-neutral-50 border border-neutral-300 rounded-xl text-xs font-mono font-bold"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                            Opening Hours
+                          </label>
+                          <input
+                            type="text"
+                            value={restaurantSettings.hours}
+                            onChange={(e) =>
+                              setRestaurantSettings({ ...restaurantSettings, hours: e.target.value })
+                            }
+                            className="w-full px-3.5 py-2 bg-neutral-50 border border-neutral-300 rounded-xl text-xs"
+                          />
+                        </div>
+
+                        <div className="sm:col-span-2 lg:col-span-3">
+                          <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                            Address & Landmark
+                          </label>
+                          <input
+                            type="text"
+                            value={restaurantSettings.address}
+                            onChange={(e) =>
+                              setRestaurantSettings({ ...restaurantSettings, address: e.target.value })
+                            }
+                            className="w-full px-3.5 py-2 bg-neutral-50 border border-neutral-300 rounded-xl text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end pt-2">
+                        <button
+                          type="button"
+                          onClick={() => showToast('Cafe details saved successfully!')}
+                          className="px-5 py-2 bg-[#24140e] text-amber-300 rounded-xl text-xs font-bold hover:bg-neutral-800"
+                        >
+                          Save Details
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. ORDERS LIST */}
+                {adminSubTab === 'orders' && (
+                  <div className="bg-white rounded-3xl border border-neutral-200 shadow-lg overflow-hidden">
+                    <div className="p-6 border-b border-neutral-200 flex items-center justify-between">
+                      <div>
+                        <h3 className="font-bold text-lg text-neutral-900">Recent Customer Orders</h3>
+                        <p className="text-xs text-neutral-500">
+                          Track payment method, delivery details, and update live preparation status.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs text-neutral-600">
+                        <thead className="bg-neutral-50 text-neutral-700 font-bold uppercase text-[10px] tracking-wider border-b border-neutral-200">
+                          <tr>
+                            <th className="py-3 px-4">Order ID & Date</th>
+                            <th className="py-3 px-4">Customer</th>
+                            <th className="py-3 px-4">Items Ordered</th>
+                            <th className="py-3 px-4">Total & Payment</th>
+                            <th className="py-3 px-4">Delivery Info</th>
+                            <th className="py-3 px-4">Order Status</th>
+                            <th className="py-3 px-4">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-neutral-100">
+                          {ordersList.map((order) => (
+                            <tr key={order.orderId} className="hover:bg-neutral-50/50">
+                              <td className="py-3.5 px-4 font-mono font-bold text-neutral-900">
+                                #{order.orderId}
+                                <div className="text-[10px] text-neutral-400 font-normal">
+                                  {order.date}
+                                </div>
+                              </td>
+                              <td className="py-3.5 px-4 font-medium text-neutral-800">
+                                {order.customerName}
+                                <div className="text-[11px] text-neutral-500 font-mono">
+                                  {order.customerPhone}
+                                </div>
+                              </td>
+                              <td className="py-3.5 px-4 max-w-xs">
+                                {order.items.map((it, idx) => (
+                                  <div key={idx} className="text-[11px]">
+                                    {it.name} {it.size ? `(${it.size})` : ''} x{it.qty}
+                                  </div>
+                                ))}
+                              </td>
+                              <td className="py-3.5 px-4 font-semibold text-neutral-900">
+                                ₹{order.total}
+                                <div className="text-[10px] text-neutral-500 font-normal">
+                                  {order.paymentMethod} •{' '}
+                                  <span className={order.upiRefId !== 'N/A' ? 'text-indigo-600 font-bold' : ''}>
+                                    {order.upiRefId !== 'N/A' ? `UTR: ${order.upiRefId}` : 'No UTR'}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="py-3.5 px-4 max-w-xs">
+                                <span
+                                  className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-1 ${
+                                    order.orderType === 'delivery'
+                                      ? 'bg-amber-100 text-amber-800'
+                                      : 'bg-emerald-100 text-emerald-800'
+                                  }`}
+                                >
+                                  {order.orderType === 'delivery' ? 'Home Delivery' : 'Takeaway'}
+                                </span>
+                                <div className="text-[11px] text-neutral-600 truncate">
+                                  {order.deliveryAddress}
+                                </div>
+                              </td>
+                              <td className="py-3.5 px-4">
+                                <select
+                                  value={order.status}
+                                  onChange={(e) => {
+                                    const newStat = e.target.value;
+                                    setOrdersList((prev) =>
+                                      prev.map((o) =>
+                                        o.orderId === order.orderId ? { ...o, status: newStat } : o
+                                      )
+                                    );
+                                    showToast(`Order #${order.orderId} marked as ${newStat}`);
+                                  }}
+                                  className="text-xs font-semibold px-2 py-1 rounded-lg border border-neutral-300 bg-white"
+                                >
+                                  <option value="Pending">Pending</option>
+                                  <option value="Accepted">Accepted</option>
+                                  <option value="Preparing">Preparing</option>
+                                  <option value="Ready">Ready</option>
+                                  <option value="Out for Delivery">Out for Delivery</option>
+                                  <option value="Delivered">Delivered</option>
+                                  <option value="Cancelled">Cancelled</option>
+                                </select>
+                              </td>
+                              <td className="py-3.5 px-4">
+                                <a
+                                  href={createWhatsAppOrderLink(order)}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="inline-flex items-center gap-1 text-[11px] bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-2.5 py-1 rounded-lg shadow-sm"
+                                >
+                                  <MessageCircle className="w-3 h-3" /> Msg
+                                </a>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. TABLE BOOKINGS */}
+                {adminSubTab === 'bookings' && (
+                  <div className="bg-white rounded-3xl border border-neutral-200 shadow-lg overflow-hidden">
+                    <div className="p-6 border-b border-neutral-200">
+                      <h3 className="font-bold text-lg text-neutral-900">Table Reservation Requests</h3>
+                      <p className="text-xs text-neutral-500">
+                        Review customer reservation inquiries and update booking status.
+                      </p>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs text-neutral-600">
+                        <thead className="bg-neutral-50 text-neutral-700 font-bold uppercase text-[10px] tracking-wider border-b border-neutral-200">
+                          <tr>
+                            <th className="py-3 px-4">Booking Ref</th>
+                            <th className="py-3 px-4">Customer Name</th>
+                            <th className="py-3 px-4">Phone</th>
+                            <th className="py-3 px-4">Date & Time</th>
+                            <th className="py-3 px-4">Guests</th>
+                            <th className="py-3 px-4">Special Request</th>
+                            <th className="py-3 px-4">Status & Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-neutral-100">
+                          {bookingsList.map((bk) => (
+                            <tr key={bk.bookingId} className="hover:bg-neutral-50/50">
+                              <td className="py-3 px-4 font-mono font-bold text-neutral-800">
+                                #{bk.bookingId}
+                              </td>
+                              <td className="py-3 px-4 font-semibold text-neutral-900">{bk.name}</td>
+                              <td className="py-3 px-4 font-mono">{bk.phone}</td>
+                              <td className="py-3 px-4">
+                                {bk.date} at {bk.time}
+                              </td>
+                              <td className="py-3 px-4 font-medium">{bk.guests} person(s)</td>
+                              <td className="py-3 px-4 text-neutral-500">{bk.request || 'None'}</td>
+                              <td className="py-3 px-4 flex items-center gap-1.5">
+                                <span
+                                  className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                    bk.status === 'Accepted'
+                                      ? 'bg-emerald-100 text-emerald-800'
+                                      : bk.status === 'Rejected'
+                                      ? 'bg-red-100 text-red-800'
+                                      : 'bg-amber-100 text-amber-800'
+                                  }`}
+                                >
+                                  {bk.status}
+                                </span>
+                                <button
+                                  onClick={() => {
+                                    setBookingsList((prev) =>
+                                      prev.map((b) =>
+                                        b.bookingId === bk.bookingId ? { ...b, status: 'Accepted' } : b
+                                      )
+                                    );
+                                    showToast(`Reservation #${bk.bookingId} Accepted!`);
+                                  }}
+                                  className="px-2 py-0.5 bg-emerald-600 text-white rounded text-[10px] hover:bg-emerald-500 font-medium"
+                                >
+                                  Accept
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setBookingsList((prev) =>
+                                      prev.map((b) =>
+                                        b.bookingId === bk.bookingId ? { ...b, status: 'Rejected' } : b
+                                      )
+                                    );
+                                    showToast(`Reservation #${bk.bookingId} Rejected.`);
+                                  }}
+                                  className="px-2 py-0.5 bg-red-600 text-white rounded text-[10px] hover:bg-red-500 font-medium"
+                                >
+                                  Reject
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+        )}
+      </main>
+
+      {/* MODAL: ADD NEW PRODUCT */}
+      {isAddProductModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setIsAddProductModalOpen(false)}
+              className="absolute top-4 right-4 text-neutral-400 hover:text-neutral-700"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-2.5 mb-5 border-b border-neutral-100 pb-3">
+              <div className="p-2.5 bg-amber-100 text-amber-800 rounded-xl">
+                <Plus className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-neutral-900">Add New Food Product</h3>
+                <p className="text-xs text-neutral-500">Item will instantly appear in the live cafe menu</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleAddNewProductSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                  Product Title *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Crispy Veg Spring Roll"
+                  value={newProductForm.name}
+                  onChange={(e) => setNewProductForm({ ...newProductForm, name: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-neutral-50 border border-neutral-300 rounded-xl text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                    Category *
+                  </label>
+                  <select
+                    value={newProductForm.category}
+                    onChange={(e) => setNewProductForm({ ...newProductForm, category: e.target.value })}
+                    className="w-full px-3 py-2 bg-neutral-50 border border-neutral-300 rounded-xl text-xs focus:ring-2 focus:ring-amber-500"
+                  >
+                    {CATEGORIES.filter((c) => c !== 'All').map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                    Initial Stock Status
+                  </label>
+                  <select
+                    value={newProductForm.available ? 'in' : 'out'}
+                    onChange={(e) =>
+                      setNewProductForm({ ...newProductForm, available: e.target.value === 'in' })
+                    }
+                    className="w-full px-3 py-2 bg-neutral-50 border border-neutral-300 rounded-xl text-xs focus:ring-2 focus:ring-amber-500"
+                  >
+                    <option value="in">In Stock</option>
+                    <option value="out">Out of Stock</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                  Subheading / Short Description
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="e.g. Golden crisp spring roll stuffed with seasoned shredded cabbage and carrots."
+                  value={newProductForm.description}
+                  onChange={(e) => setNewProductForm({ ...newProductForm, description: e.target.value })}
+                  className="w-full px-3.5 py-2 bg-neutral-50 border border-neutral-300 rounded-xl text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                  Food Image URL
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://..."
+                  value={newProductForm.image}
+                  onChange={(e) => setNewProductForm({ ...newProductForm, image: e.target.value })}
+                  className="w-full px-3.5 py-2 bg-neutral-50 border border-neutral-300 rounded-xl text-xs font-mono focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                />
+              </div>
+
+              {/* Pricing mode: Single vs Multi-size (Pizza) */}
+              <div className="p-3 bg-amber-50/70 rounded-2xl border border-amber-200/60 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-neutral-800">Has Multiple Sizes (e.g. Pizza)?</span>
+                  <input
+                    type="checkbox"
+                    checked={newProductForm.hasSizes}
+                    onChange={(e) =>
+                      setNewProductForm({ ...newProductForm, hasSizes: e.target.checked })
+                    }
+                    className="w-4 h-4 text-amber-600 rounded"
+                  />
+                </div>
+
+                {newProductForm.hasSizes ? (
+                  <div className="grid grid-cols-3 gap-2 pt-1">
+                    <div>
+                      <span className="text-[10px] font-bold text-neutral-600">Small Price (₹)</span>
+                      <input
+                        type="number"
+                        placeholder="e.g. 65"
+                        value={newProductForm.smallPrice}
+                        onChange={(e) =>
+                          setNewProductForm({ ...newProductForm, smallPrice: e.target.value })
+                        }
+                        className="w-full px-2 py-1.5 text-xs bg-white border border-neutral-300 rounded-lg font-bold"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-neutral-600">Medium Price (₹)</span>
+                      <input
+                        type="number"
+                        placeholder="e.g. 120"
+                        value={newProductForm.medPrice}
+                        onChange={(e) =>
+                          setNewProductForm({ ...newProductForm, medPrice: e.target.value })
+                        }
+                        className="w-full px-2 py-1.5 text-xs bg-white border border-neutral-300 rounded-lg font-bold"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-neutral-600">Large Price (₹)</span>
+                      <input
+                        type="number"
+                        placeholder="e.g. 180"
+                        value={newProductForm.largePrice}
+                        onChange={(e) =>
+                          setNewProductForm({ ...newProductForm, largePrice: e.target.value })
+                        }
+                        className="w-full px-2 py-1.5 text-xs bg-white border border-neutral-300 rounded-lg font-bold"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-[11px] font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                      Price in ₹ (Leave empty for 'Price Coming Soon')
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 35"
+                      value={newProductForm.price}
+                      onChange={(e) => setNewProductForm({ ...newProductForm, price: e.target.value })}
+                      className="w-full px-3 py-2 bg-white border border-neutral-300 rounded-xl text-xs font-bold"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  className="w-full py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-bold rounded-2xl shadow transition-all flex items-center justify-center gap-2 text-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  Save and Add to Menu
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: EDIT PRODUCT */}
+      {editingProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setEditingProduct(null)}
+              className="absolute top-4 right-4 text-neutral-400 hover:text-neutral-700"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-2.5 mb-5 border-b border-neutral-100 pb-3">
+              <div className="p-2.5 bg-amber-100 text-amber-800 rounded-xl">
+                <Edit2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-neutral-900">Edit Product</h3>
+                <p className="text-xs text-neutral-500">Modify details for "{editingProduct.name}"</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleEditProductSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                  Product Title *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editingProduct.name}
+                  onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-neutral-50 border border-neutral-300 rounded-xl text-xs"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                    Category *
+                  </label>
+                  <select
+                    value={editingProduct.category}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
+                    className="w-full px-3 py-2 bg-neutral-50 border border-neutral-300 rounded-xl text-xs"
+                  >
+                    {CATEGORIES.filter((c) => c !== 'All').map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                    Stock Availability
+                  </label>
+                  <select
+                    value={editingProduct.available ? 'in' : 'out'}
+                    onChange={(e) =>
+                      setEditingProduct({ ...editingProduct, available: e.target.value === 'in' })
+                    }
+                    className="w-full px-3 py-2 bg-neutral-50 border border-neutral-300 rounded-xl text-xs"
+                  >
+                    <option value="in">In Stock</option>
+                    <option value="out">Out of Stock</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                  Description / Subheading
+                </label>
+                <textarea
+                  rows={2}
+                  value={editingProduct.description}
+                  onChange={(e) => setEditingProduct({ ...editingProduct, description: e.target.value })}
+                  className="w-full px-3.5 py-2 bg-neutral-50 border border-neutral-300 rounded-xl text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                  Food Image URL
+                </label>
+                <input
+                  type="url"
+                  value={editingProduct.image}
+                  onChange={(e) => setEditingProduct({ ...editingProduct, image: e.target.value })}
+                  className="w-full px-3.5 py-2 bg-neutral-50 border border-neutral-300 rounded-xl text-xs font-mono"
+                />
+              </div>
+
+              {/* Price Editor */}
+              {editingProduct.hasSizes ? (
+                <div className="p-3 bg-amber-50/70 rounded-2xl border border-amber-200/60">
+                  <span className="text-xs font-bold text-neutral-800 block mb-2">Sizes & Pricing (₹)</span>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <span className="text-[10px] text-neutral-500 font-bold">Small</span>
+                      <input
+                        type="number"
+                        value={editingProduct.sizes.Small}
+                        onChange={(e) =>
+                          setEditingProduct({
+                            ...editingProduct,
+                            sizes: { ...editingProduct.sizes, Small: Number(e.target.value) }
+                          })
+                        }
+                        className="w-full px-2 py-1 text-xs bg-white border border-neutral-300 rounded font-bold"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-neutral-500 font-bold">Medium</span>
+                      <input
+                        type="number"
+                        value={editingProduct.sizes.Medium}
+                        onChange={(e) =>
+                          setEditingProduct({
+                            ...editingProduct,
+                            sizes: { ...editingProduct.sizes, Medium: Number(e.target.value) }
+                          })
+                        }
+                        className="w-full px-2 py-1 text-xs bg-white border border-neutral-300 rounded font-bold"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-neutral-500 font-bold">Large</span>
+                      <input
+                        type="number"
+                        value={editingProduct.sizes.Large}
+                        onChange={(e) =>
+                          setEditingProduct({
+                            ...editingProduct,
+                            sizes: { ...editingProduct.sizes, Large: Number(e.target.value) }
+                          })
+                        }
+                        className="w-full px-2 py-1 text-xs bg-white border border-neutral-300 rounded font-bold"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                    Price (₹)
+                  </label>
+                  <input
+                    type="number"
+                    value={editingProduct.price === null ? '' : editingProduct.price}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, price: e.target.value })}
+                    className="w-full px-3.5 py-2 bg-neutral-50 border border-neutral-300 rounded-xl text-xs font-bold"
+                  />
+                </div>
+              )}
+
+              <div className="pt-2 flex gap-3">
+                <button
+                  type="submit"
+                  className="flex-1 py-3 bg-[#24140e] hover:bg-neutral-800 text-amber-300 font-bold rounded-2xl text-xs shadow"
+                >
+                  Save Changes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditingProduct(null)}
+                  className="px-4 py-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-bold rounded-2xl text-xs"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* SHOPPING CART & CHECKOUT SLIDE-OVER DRAWER */}
+      {cartDrawerOpen && (
+        <div className="fixed inset-0 z-50 overflow-hidden">
+          <div
+            onClick={() => setCartDrawerOpen(false)}
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+          />
+
+          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+            <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col">
+              {/* Drawer Header */}
+              <div className="bg-[#24140e] text-white p-5 flex items-center justify-between border-b border-[#3d2417]">
+                <div className="flex items-center gap-2">
+                  <ShoppingBag className="w-5 h-5 text-amber-400" />
+                  <h2 className="font-bold text-lg">Your Cafe Cart</h2>
+                  <span className="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-mono">
+                    {totalCartCount} items
+                  </span>
+                </div>
+                <button
+                  onClick={() => setCartDrawerOpen(false)}
+                  className="p-1.5 text-neutral-400 hover:text-white rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Drawer Cart Items */}
+              <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                {cart.length === 0 ? (
+                  <div className="text-center py-16">
+                    <ShoppingBag className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
+                    <p className="text-sm font-semibold text-neutral-600">Your cart is empty</p>
+                    <p className="text-xs text-neutral-400 mt-1">
+                      Add delicious snacks, cold coffee or hot pizza to get started!
+                    </p>
+                    <button
+                      onClick={() => {
+                        setCartDrawerOpen(false);
+                        setActiveTab('menu');
+                      }}
+                      className="mt-5 px-5 py-2.5 bg-[#24140e] text-amber-300 text-xs font-bold rounded-xl"
+                    >
+                      Browse Menu
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    {/* Order Type Selector */}
+                    <div className="bg-amber-50 p-1.5 rounded-2xl flex border border-amber-200/60">
+                      <button
+                        type="button"
+                        onClick={() => setOrderType('delivery')}
+                        className={`flex-1 py-2 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all ${
+                          orderType === 'delivery'
+                            ? 'bg-[#24140e] text-amber-300 shadow'
+                            : 'text-neutral-700 hover:text-neutral-900'
+                        }`}
+                      >
+                        <Truck className="w-3.5 h-3.5" />
+                        Home Delivery (+₹{deliveryFee})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setOrderType('takeaway')}
+                        className={`flex-1 py-2 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all ${
+                          orderType === 'takeaway'
+                            ? 'bg-[#24140e] text-amber-300 shadow'
+                            : 'text-neutral-700 hover:text-neutral-900'
+                        }`}
+                      >
+                        <Store className="w-3.5 h-3.5" />
+                        Takeaway / Pick Up (₹0)
+                      </button>
+                    </div>
+
+                    {/* Cart Items List */}
+                    <div className="divide-y divide-neutral-100">
+                      {cart.map((item) => (
+                        <div key={item.cartId} className="py-3 flex items-center justify-between gap-3">
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-14 h-14 rounded-xl object-cover bg-neutral-100 flex-shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-xs font-bold text-neutral-900 truncate">
+                              {item.name}
+                            </h4>
+                            {item.selectedSize && (
+                              <span className="text-[10px] font-semibold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">
+                                Size: {item.selectedSize}
+                              </span>
+                            )}
+                            <div className="text-xs font-bold text-neutral-700 mt-0.5">
+                              ₹{item.price * item.quantity}
+                              <span className="text-[10px] text-neutral-400 font-normal ml-1">
+                                (₹{item.price} each)
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center border border-neutral-200 rounded-lg bg-neutral-50">
+                              <button
+                                onClick={() => handleUpdateQty(item.cartId, -1)}
+                                className="p-1 hover:bg-neutral-200 rounded-l"
+                              >
+                                <Minus className="w-3 h-3 text-neutral-700" />
+                              </button>
+                              <span className="w-6 text-center text-xs font-bold text-neutral-900">
+                                {item.quantity}
+                              </span>
+                              <button
+                                onClick={() => handleUpdateQty(item.cartId, 1)}
+                                className="p-1 hover:bg-neutral-200 rounded-r"
+                              >
+                                <Plus className="w-3 h-3 text-neutral-700" />
+                              </button>
+                            </div>
+
+                            <button
+                              onClick={() => handleRemoveFromCart(item.cartId)}
+                              className="text-neutral-400 hover:text-red-600 p-1"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* CHECKOUT FORM IN DRAWER */}
+                    <div className="mt-4 pt-4 border-t border-neutral-200 space-y-3">
+                      <h3 className="font-bold text-xs uppercase tracking-wider text-neutral-800">
+                        Customer & Delivery Details
+                      </h3>
+
+                      <div>
+                        <input
+                          type="text"
+                          required
+                          placeholder="Your Full Name *"
+                          value={customerName}
+                          onChange={(e) => setCustomerName(e.target.value)}
+                          className="w-full px-3.5 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <input
+                          type="tel"
+                          required
+                          placeholder="10-digit Phone Number *"
+                          value={customerPhone}
+                          onChange={(e) => setCustomerPhone(e.target.value)}
+                          className="w-full px-3.5 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                        />
+                      </div>
+
+                      {orderType === 'delivery' && (
+                        <>
+                          <div>
+                            <textarea
+                              rows={2}
+                              required
+                              placeholder="Complete Delivery Address in Babhar Kalagram area *"
+                              value={deliveryAddress}
+                              onChange={(e) => setDeliveryAddress(e.target.value)}
+                              className="w-full px-3.5 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <input
+                              type="text"
+                              placeholder="Nearby Landmark (e.g. Near Navin Hospital)"
+                              value={landmark}
+                              onChange={(e) => setLandmark(e.target.value)}
+                              className="w-full px-3.5 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                            />
+                          </div>
+                        </>
+                      )}
+
+                      <div>
+                        <input
+                          type="text"
+                          placeholder="Special Instructions (e.g. Less spicy, extra ketchup)"
+                          value={specialInstructions}
+                          onChange={(e) => setSpecialInstructions(e.target.value)}
+                          className="w-full px-3.5 py-2 text-xs bg-neutral-50 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                        />
+                      </div>
+
+                      {/* PAYMENT METHOD SELECTION */}
+                      <div className="pt-2">
+                        <label className="block text-xs font-bold text-neutral-800 uppercase tracking-wider mb-2">
+                          Select Payment Method
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setPaymentMethod('upi')}
+                            className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all ${
+                              paymentMethod === 'upi'
+                                ? 'bg-amber-50 border-amber-600 ring-2 ring-amber-500'
+                                : 'bg-white border-neutral-200 hover:bg-neutral-50'
+                            }`}
+                          >
+                            <div className="flex items-center gap-1.5">
+                              <QrCode className="w-4 h-4 text-amber-700" />
+                              <span className="text-xs font-bold text-neutral-900">UPI / QR</span>
+                            </div>
+                            <span className="text-[10px] text-neutral-500 mt-1">
+                              Scan & Pay instantly
+                            </span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setPaymentMethod('cod')}
+                            className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all ${
+                              paymentMethod === 'cod'
+                                ? 'bg-amber-50 border-amber-600 ring-2 ring-amber-500'
+                                : 'bg-white border-neutral-200 hover:bg-neutral-50'
+                            }`}
+                          >
+                            <div className="flex items-center gap-1.5">
+                              <DollarSign className="w-4 h-4 text-emerald-700" />
+                              <span className="text-xs font-bold text-neutral-900">Cash (COD)</span>
+                            </div>
+                            <span className="text-[10px] text-neutral-500 mt-1">
+                              Pay cash at delivery
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* UPI QR Code Container if UPI Selected */}
+                      {paymentMethod === 'upi' && (
+                        <div className="bg-neutral-50 p-4 rounded-2xl border border-neutral-200 text-center space-y-3">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-semibold text-neutral-600">Merchant UPI ID:</span>
+                            <span className="font-mono font-bold text-indigo-700 bg-white px-2 py-0.5 rounded border border-neutral-200">
+                              {restaurantSettings.upiId}
+                            </span>
+                          </div>
+
+                          <div className="bg-white p-3 rounded-xl border border-neutral-200 inline-block mx-auto shadow-sm">
+                            <img
+                              src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
+                                dynamicUpiUri
+                              )}`}
+                              alt="UPI Payment QR Code"
+                              className="w-36 h-36 mx-auto object-contain"
+                            />
+                            <div className="text-[10px] font-bold text-neutral-700 mt-1">
+                              Scan with any UPI App (₹{cartTotal})
+                            </div>
+                          </div>
+
+                          <div className="flex justify-center">
+                            <a
+                              href={dynamicUpiUri}
+                              className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                              Pay via UPI App Directly
+                            </a>
+                          </div>
+
+                          <div>
+                            <input
+                              type="text"
+                              placeholder="Enter UPI Reference / UTR (Optional)"
+                              value={upiRefId}
+                              onChange={(e) => setUpiRefId(e.target.value)}
+                              className="w-full px-3 py-1.5 text-xs bg-white border border-neutral-300 rounded-lg text-center font-mono focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Drawer Footer Bill Summary & Action */}
+              {cart.length > 0 && (
+                <div className="p-5 border-t border-neutral-200 bg-neutral-50 space-y-3">
+                  <div className="space-y-1.5 text-xs text-neutral-600">
+                    <div className="flex justify-between">
+                      <span>Food Subtotal</span>
+                      <span className="font-bold text-neutral-900">₹{cartSubtotal}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>
+                        Delivery Charge{' '}
+                        {orderType === 'takeaway' ? '(Takeaway)' : '(Standard Fee)'}
+                      </span>
+                      <span className="font-bold text-neutral-900">
+                        {orderType === 'takeaway' ? '₹0 (Free)' : `₹${activeDeliveryCharge}`}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-base font-black text-[#24140e] pt-2 border-t border-neutral-200">
+                      <span>Total Payable</span>
+                      <span className="text-amber-800">₹{cartTotal}</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handlePlaceOrder}
+                    className="w-full py-3.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-black rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 text-sm"
+                  >
+                    Confirm Order & Send to WhatsApp
+                  </button>
+                  <p className="text-[10px] text-center text-neutral-500">
+                    * The order details will be pre-filled into WhatsApp for live kitchen confirmation.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
-        `;
-        grid.appendChild(card);
-      });
+        </div>
+      )}
 
-      lucide.createIcons();
-    }
+      {/* ORDER CONFIRMATION MODAL & RECEIPT */}
+      {orderConfirmedModal && lastPlacedOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setOrderConfirmedModal(false)}
+              className="absolute top-4 right-4 text-neutral-400 hover:text-neutral-700"
+            >
+              <X className="w-5 h-5" />
+            </button>
 
-    // CATEGORY FILTER
-    function filterCategory(category) {
-      currentCategory = category;
-      document.querySelectorAll(".cat-pill").forEach(pill => {
-        pill.classList.remove("bg-amber-500", "text-black");
-        pill.classList.add("bg-stone-900", "text-stone-300");
-      });
-      event.target.classList.add("bg-amber-500", "text-black");
-      event.target.classList.remove("bg-stone-900", "text-stone-300");
-      renderMenu();
-    }
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3">
+                <CheckCircle className="w-10 h-10" />
+              </div>
+              <h3 className="text-2xl font-black text-neutral-900">Order Placed!</h3>
+              <p className="text-xs text-neutral-500 mt-1">
+                Order Reference: <strong className="font-mono text-neutral-800">#{lastPlacedOrder.orderId}</strong>
+              </p>
+            </div>
 
-    // SEARCH HANDLER
-    function handleSearch(val) {
-      searchQuery = val;
-      renderMenu();
-    }
+            <div className="mt-5 bg-neutral-50 p-4 rounded-2xl border border-neutral-200 text-xs space-y-2">
+              <div className="flex justify-between font-bold text-neutral-800 border-b pb-2">
+                <span>Customer: {lastPlacedOrder.customerName}</span>
+                <span>{lastPlacedOrder.customerPhone}</span>
+              </div>
 
-    // CART OPERATIONS
-    function addToCart(id) {
-      const item = menuData.find(i => i.id === id);
-      if (!item) return;
-      cart[id] = { ...item, qty: 1 };
-      updateCartUI();
-      renderMenu();
-    }
+              <div className="py-2 space-y-1">
+                {lastPlacedOrder.items.map((it, i) => (
+                  <div key={i} className="flex justify-between text-neutral-700">
+                    <span>
+                      {it.name} {it.size ? `(${it.size})` : ''} x{it.qty}
+                    </span>
+                    <span className="font-semibold">₹{it.price * it.qty}</span>
+                  </div>
+                ))}
+              </div>
 
-    function updateQty(id, change) {
-      if (!cart[id]) return;
-      cart[id].qty += change;
-      if (cart[id].qty <= 0) {
-        delete cart[id];
-      }
-      updateCartUI();
-      renderMenu();
-    }
+              <div className="border-t pt-2 space-y-1">
+                <div className="flex justify-between text-neutral-600">
+                  <span>Subtotal:</span>
+                  <span>₹{lastPlacedOrder.subtotal}</span>
+                </div>
+                <div className="flex justify-between text-neutral-600">
+                  <span>Delivery Charge:</span>
+                  <span>₹{lastPlacedOrder.deliveryCharge}</span>
+                </div>
+                <div className="flex justify-between font-bold text-sm text-[#24140e] pt-1 border-t">
+                  <span>Total Amount:</span>
+                  <span className="text-amber-800">₹{lastPlacedOrder.total}</span>
+                </div>
+                <div className="flex justify-between text-neutral-500 text-[11px] pt-1">
+                  <span>Payment Mode:</span>
+                  <span>{lastPlacedOrder.paymentMethod}</span>
+                </div>
+              </div>
+            </div>
 
-    function updateCartUI() {
-      const cartKeys = Object.keys(cart);
-      const totalItems = cartKeys.reduce((sum, key) => sum + cart[key].qty, 0);
-      const grandTotal = cartKeys.reduce((sum, key) => sum + (cart[key].price * cart[key].qty), 0);
+            <div className="mt-5 p-3.5 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5">
+              <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <strong>Action Required:</strong> Click below to send your order summary to Shri Shyam Cafe on WhatsApp to confirm!
+              </div>
+            </div>
 
-      document.getElementById("cart-count-badge").innerText = totalItems;
-      document.getElementById("floating-count").innerText = totalItems;
-      document.getElementById("floating-total").innerText = `₹${grandTotal}`;
-      document.getElementById("cart-subtotal").innerText = `₹${grandTotal}`;
-      document.getElementById("cart-total").innerText = `₹${grandTotal}`;
-
-      const floatingBar = document.getElementById("floating-bar");
-      if (totalItems > 0) {
-        floatingBar.classList.remove("hidden");
-      } else {
-        floatingBar.classList.add("hidden");
-      }
-
-      // Render cart items inside drawer
-      const container = document.getElementById("cart-items");
-      container.innerHTML = "";
-
-      if (totalItems === 0) {
-        container.innerHTML = `
-          <div class="text-center py-12 text-stone-500">
-            <i data-lucide="shopping-bag" class="w-10 h-10 mx-auto mb-2 opacity-30"></i>
-            <p class="text-xs">Your basket is empty.<br>Pick some delicious food!</p>
+            <div className="mt-5 space-y-2.5">
+              <a
+                href={createWhatsAppOrderLink(lastPlacedOrder)}
+                target="_blank"
+                rel="noreferrer"
+                className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl flex items-center justify-center gap-2 text-sm shadow"
+              >
+                <MessageCircle className="w-5 h-5 fill-white" />
+                Open WhatsApp & Confirm Order
+              </a>
+              <button
+                onClick={() => setOrderConfirmedModal(false)}
+                className="w-full py-2.5 text-xs text-neutral-600 hover:text-neutral-900 font-semibold"
+              >
+                Close & Return to Cafe
+              </button>
+            </div>
           </div>
-        `;
-        lucide.createIcons();
-        return;
-      }
+        </div>
+      )}
 
-      cartKeys.forEach(id => {
-        const item = cart[id];
-        const row = document.createElement("div");
-        row.className = "flex items-center justify-between bg-stone-950 p-2.5 rounded-xl border border-stone-800 text-xs";
-        row.innerHTML = `
-          <div>
-            <p class="font-bold text-white">${item.name}</p>
-            <p class="text-amber-500 font-semibold">₹${item.price} × ${item.qty} = ₹${item.price * item.qty}</p>
+      {/* TABLE BOOKING CONFIRMATION MODAL */}
+      {bookingConfirmedModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 text-center shadow-2xl relative">
+            <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3">
+              <Calendar className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-bold text-neutral-900">Reservation Request Generated!</h3>
+            <p className="text-xs text-neutral-500 mt-1">
+              Booking Ref: <strong className="text-neutral-800">#{bookingConfirmedModal.bookingId}</strong>
+            </p>
+
+            <div className="my-4 bg-neutral-50 p-4 rounded-2xl text-left text-xs space-y-1.5 border">
+              <div><strong>Name:</strong> {bookingConfirmedModal.name}</div>
+              <div><strong>Date & Time:</strong> {bookingConfirmedModal.date} at {bookingConfirmedModal.time}</div>
+              <div><strong>Guests:</strong> {bookingConfirmedModal.guests}</div>
+              {bookingConfirmedModal.request && <div><strong>Note:</strong> {bookingConfirmedModal.request}</div>}
+            </div>
+
+            <p className="text-xs text-amber-800 mb-4 font-medium">
+              Please click below to submit your reservation details to our WhatsApp number ({restaurantSettings.phone}).
+            </p>
+
+            <div className="space-y-2">
+              <a
+                href={createWhatsAppBookingLink(bookingConfirmedModal)}
+                target="_blank"
+                rel="noreferrer"
+                className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl flex items-center justify-center gap-2 text-xs shadow"
+              >
+                <MessageCircle className="w-4 h-4 fill-white" />
+                Send Request via WhatsApp
+              </a>
+              <button
+                onClick={() => setBookingConfirmedModal(null)}
+                className="w-full py-2 text-xs text-neutral-500"
+              >
+                Done
+              </button>
+            </div>
           </div>
-          <div class="flex items-center gap-2 bg-stone-800 rounded-lg px-2 py-1">
-            <button onclick="updateQty(${item.id}, -1)" class="text-stone-400 hover:text-white font-bold">−</button>
-            <span class="text-xs font-bold text-white px-1">${item.qty}</span>
-            <button onclick="updateQty(${item.id}, 1)" class="text-stone-400 hover:text-white font-bold">+</button>
+        </div>
+      )}
+
+      {/* FOOTER */}
+      <footer className="bg-[#1c100b] text-neutral-300 pt-14 pb-12 border-t border-[#3d2417] mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+            {/* Col 1 */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white">
+                  <Coffee className="w-5 h-5" />
+                </div>
+                <h3 className="text-lg font-bold text-white">Shri Shyam Cafe</h3>
+              </div>
+              <p className="text-xs text-neutral-400 leading-relaxed">
+                Your premier local spot for delicious fast food, authentic tea, handcrafted shakes, and fresh hot pizzas in बम्बर कलाग्राम, Bihar.
+              </p>
+              <div className="pt-2 text-xs text-amber-300">
+                UPI: <code className="font-mono bg-[#2a170f] px-2 py-0.5 rounded">{restaurantSettings.upiId}</code>
+              </div>
+            </div>
+
+            {/* Col 2 */}
+            <div>
+              <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-3">
+                Quick Navigation
+              </h4>
+              <ul className="space-y-2 text-xs">
+                <li>
+                  <button onClick={() => setActiveTab('home')} className="hover:text-amber-400">
+                    Home
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setActiveTab('menu')} className="hover:text-amber-400">
+                    Food Menu & Pricing
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setActiveTab('booking')} className="hover:text-amber-400">
+                    Table Reservation
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setActiveTab('contact')} className="hover:text-amber-400">
+                    Contact & Directions
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setActiveTab('admin')} className="text-amber-300 hover:text-white font-bold">
+                    Owner Admin Portal
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            {/* Col 3 */}
+            <div>
+              <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-3">
+                Delivery & Details
+              </h4>
+              <p className="text-xs text-neutral-400 leading-relaxed">
+                Standard delivery charge is ₹{deliveryFee} per home delivery order. Takeaway pick-ups have ₹0 delivery fee.
+              </p>
+              <div className="mt-3 text-xs text-neutral-400">
+                <strong>Hours:</strong> {restaurantSettings.hours}
+              </div>
+              <div className="mt-1 text-xs text-neutral-400">
+                <strong>Location:</strong> Opposite Navin Hospital
+              </div>
+            </div>
+
+            {/* Col 4 */}
+            <div>
+              <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-3">
+                Contact Us
+              </h4>
+              <div className="space-y-2 text-xs">
+                <a
+                  href={`tel:${restaurantSettings.phone}`}
+                  className="flex items-center gap-2 hover:text-white text-emerald-400 font-semibold"
+                >
+                  <Phone className="w-4 h-4" /> {restaurantSettings.phone}
+                </a>
+                <a
+                  href={`https://wa.me/917485869591`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-2 hover:text-white text-emerald-400 font-semibold"
+                >
+                  <MessageCircle className="w-4 h-4" /> Chat on WhatsApp
+                </a>
+                <div className="text-[11px] text-neutral-500 pt-2">
+                  {restaurantSettings.address} Bihar 811213
+                </div>
+              </div>
+            </div>
           </div>
-        `;
-        container.appendChild(row);
-      });
 
-      lucide.createIcons();
-    }
+          <div className="mt-12 pt-6 border-t border-[#3d2417] text-center text-[11px] text-neutral-500 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>© {new Date().getFullYear()} Shri Shyam Cafe. All rights reserved.</div>
+            <div className="flex gap-4">
+              <span>Privacy Policy</span>
+              <span>•</span>
+              <span>Terms of Service</span>
+            </div>
+          </div>
+        </div>
+      </footer>
 
-    function toggleCartDrawer() {
-      const drawer = document.getElementById("cart-drawer");
-      drawer.classList.toggle("hidden");
-    }
+      {/* MOBILE STICKY BOTTOM NAVIGATION BAR */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#1c100b] border-t border-[#3d2417] px-4 py-2 flex items-center justify-around shadow-2xl backdrop-blur-md">
+        <button
+          onClick={() => setActiveTab('home')}
+          className={`flex flex-col items-center gap-1 text-[10px] font-semibold ${
+            activeTab === 'home' ? 'text-amber-400' : 'text-neutral-400'
+          }`}
+        >
+          <Coffee className="w-5 h-5" />
+          <span>Home</span>
+        </button>
 
-    function setDiningType(type) {
-      selectedDiningType = type;
-      ['dine', 'takeaway', 'delivery'].forEach(t => {
-        const el = document.getElementById(`type-${t}`);
-        el.className = "dining-pill py-2 rounded-lg text-xs font-semibold border border-stone-700 bg-stone-800 text-stone-300";
-      });
-      const current = type === 'Dine-in' ? 'type-dine' : (type === 'Takeaway' ? 'type-takeaway' : 'type-delivery');
-      document.getElementById(current).className = "dining-pill active py-2 rounded-lg text-xs font-semibold border border-amber-500 bg-amber-500 text-black";
-    }
+        <button
+          onClick={() => setActiveTab('menu')}
+          className={`flex flex-col items-center gap-1 text-[10px] font-semibold ${
+            activeTab === 'menu' ? 'text-amber-400' : 'text-neutral-400'
+          }`}
+        >
+          <MenuIcon className="w-5 h-5" />
+          <span>Menu</span>
+        </button>
 
-    // DIRECT WHATSAPP INTEGRATION: ORDERS
-    function sendWhatsAppOrder() {
-      const cartKeys = Object.keys(cart);
-      if (cartKeys.length === 0) {
-        alert("Your cart is empty! Please add some delicious snacks first.");
-        return;
-      }
+        <button
+          onClick={() => setCartDrawerOpen(true)}
+          className="relative flex flex-col items-center gap-1 text-[10px] font-semibold text-neutral-400"
+        >
+          <ShoppingBag className="w-5 h-5 text-amber-400" />
+          <span>Cart</span>
+          {totalCartCount > 0 && (
+            <span className="absolute -top-1 -right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center">
+              {totalCartCount}
+            </span>
+          )}
+        </button>
 
-      const name = document.getElementById("cust-name").value.trim();
-      const phone = document.getElementById("cust-phone").value.trim();
-      const table = document.getElementById("cust-table").value.trim();
-      const notes = document.getElementById("cust-notes").value.trim();
+        <button
+          onClick={() => setActiveTab('booking')}
+          className={`flex flex-col items-center gap-1 text-[10px] font-semibold ${
+            activeTab === 'booking' ? 'text-amber-400' : 'text-neutral-400'
+          }`}
+        >
+          <Calendar className="w-5 h-5" />
+          <span>Booking</span>
+        </button>
 
-      if (!name) {
-        alert("Please enter your name before placing the order.");
-        document.getElementById("cust-name").focus();
-        return;
-      }
-
-      let grandTotal = 0;
-      let itemsListText = "";
-
-      cartKeys.forEach((key, index) => {
-        const item = cart[key];
-        const lineTotal = item.price * item.qty;
-        grandTotal += lineTotal;
-        itemsListText += `${index + 1}. *${item.name}* × ${item.qty} = ₹${lineTotal}\n`;
-      });
-
-      // Format WhatsApp Message
-      let message = `*🍽️ NEW ORDER - SHRI SHYAM CAFE*\n`;
-      message += `------------------------------------\n`;
-      message += `*Customer:* ${name}\n`;
-      if (phone) message += `*Contact:* ${phone}\n`;
-      message += `*Order Type:* ${selectedDiningType}\n`;
-      if (table) message += `*Table / Address:* ${table}\n`;
-      if (notes) message += `*Special Note:* ${notes}\n`;
-      message += `------------------------------------\n`;
-      message += `*ITEMS ORDERED:*\n${itemsListText}`;
-      message += `------------------------------------\n`;
-      message += `*TOTAL AMOUNT:* ₹${grandTotal}\n`;
-      message += `📍 *Location:* बम्बर कलाग्राम, नवीन अस्पताल के सामने\n`;
-      message += `_Sent via Shri Shyam Cafe Ordering App_`;
-
-      const whatsappURL = `https://wa.me/${CAFE_PHONE}?text=${encodeURIComponent(message)}`;
-      window.open(whatsappURL, "_blank");
-    }
-
-    // TABLE RESERVATION MODAL & WHATSAPP
-    function openBookingModal() {
-      document.getElementById("booking-modal").classList.remove("hidden");
-    }
-    function closeBookingModal() {
-      document.getElementById("booking-modal").classList.add("hidden");
-    }
-    function sendWhatsAppBooking() {
-      const name = document.getElementById("book-name").value.trim();
-      const guests = document.getElementById("book-guests").value;
-      const date = document.getElementById("book-date").value;
-      const time = document.getElementById("book-time").value;
-
-      if (!name) {
-        alert("Please enter your name.");
-        return;
-      }
-
-      let message = `*📅 TABLE RESERVATION REQUEST*\n`;
-      message += `*Shri Shyam Cafe, Bambar Kalagram*\n`;
-      message += `------------------------------------\n`;
-      message += `*Name:* ${name}\n`;
-      message += `*Guests Count:* ${guests} Person(s)\n`;
-      message += `*Date:* ${date || 'Today'}\n`;
-      message += `*Preferred Time:* ${time || 'Immediate'}\n`;
-      message += `------------------------------------\n`;
-      message += `Please confirm my table reservation!`;
-
-      const whatsappURL = `https://wa.me/${CAFE_PHONE}?text=${encodeURIComponent(message)}`;
-      window.open(whatsappURL, "_blank");
-      closeBookingModal();
-    }
-  </script>
-</body>
-</html>
+        <button
+          onClick={() => setActiveTab('admin')}
+          className={`flex flex-col items-center gap-1 text-[10px] font-semibold ${
+            activeTab === 'admin' ? 'text-amber-300 font-bold' : 'text-neutral-400'
+          }`}
+        >
+          <Lock className="w-5 h-5" />
+          <span>Admin</span>
+        </button>
+      </nav>
+    </div>
+  );
+}
